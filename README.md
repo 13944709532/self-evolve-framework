@@ -4,6 +4,16 @@
 >
 > ⚠️ 此包专为 [CodeBuddy](https://www.codebuddy.ai) 设计，依赖 `.codebuddy/rules/` 和 `.codebuddy/skills/` 目录结构，非 CodeBuddy 环境无效。
 
+## 由来
+
+维护了两个项目，各自打磨了一套 Skill 规则。每次改进都要在两边重复复制粘贴，很快变得难以同步。直到 AI 建议："为什么不打包成 npm 包？"
+
+于是有了 Self-Evolve Framework。
+
+一套规则，`npx` 即用，两边同步，不再需要手动搬运。
+
+这本质上是一个私人工具箱——觉得好用的 Skill、好用的规则，会持续往里集成。方便自己，也顺手方便别人。
+
 ## 安装
 
 ```bash
