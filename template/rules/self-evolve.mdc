@@ -1,0 +1,93 @@
+---
+description: 自我进化飞轮 — 统一调度 Ponytail/CodeGraph/Skillopt-Sleep，形成 post-edit 验证→错误记忆→规则推荐闭环
+alwaysApply: true
+---
+
+# Self-Evolve：自我进化框架
+
+> 此规则编排整个进化飞轮。具体约束（代码最小化、工具选择）委托给子规则。
+
+## 调度架构
+
+```
+self-evolve.mdc（编排层 — 当前文件）
+  ├── ponytail.mdc       → 代码最小化检查（每个操作前）
+  ├── CodeGraph MCP       → 依赖图分析（重构/调 bug 时）
+  └── skillopt-sleep      → 离线进化分析（按需调）
+       ↓
+  post-edit 验证闭环 ← ⭐ 核心
+```
+
+## 🔄 核心工作流：Post-Edit 验证闭环
+
+**每次修改代码后必须执行以下流程：**
+
+### 步骤 1：前置检查（修改前）
+```
+┌─ 修改范围 > 3 个文件？──→ 调 Ponytail 约束 → 询问用户是否可缩小
+└─ 重构/修复 bug？─────→ 调 CodeGraph MCP → 评估影响范围
+```
+
+### 步骤 2：执行修改
+按 Ponytail 原则写最少代码。
+
+### 步骤 3：自动验证（修改后）
+```
+1. 前端：运行 npm run build
+   → 失败 → 分析错误 → 修复 → 重试 build → 最多 3 次
+2. Rust：在 src-tauri 目录运行 cargo check（如果存在）
+   → 失败 → 分析错误 → 修复 → 重试 cargo check → 最多 3 次
+3. 全部通过 → 进入步骤 4
+4. 3 次仍失败 → 停止，向用户报告错误并请求协助
+```
+
+### 步骤 4：写入记忆
+```text
+每次验证失败，用 update_memory 记录：
+  title: "Error Pattern: {错误类型简写}"
+  action: create
+  knowledge: |
+    - 日期: YYYY-MM-DD
+    - 文件: <涉及文件>
+    - 错误: ...
+    - 修复: ...
+    - 归因: 类型不匹配 / 调用错误 / 约定遗漏
+
+同类型错误出现 ≥2 次 → 自动创建规则：
+  create .codebuddy/rules/{pattern-name}.mdc
+```
+
+### 步骤 5：会话结束检查
+```
+检查 memory 中上次 skillopt-sleep 审计日期
+  → 超过 7 天 → 提示："项目已 {N} 天未审计，需要跑 skillopt-sleep 吗？"
+```
+
+## 🔧 CodeGraph MCP 使用规则
+
+| 场景 | 必须调用的工具 |
+|------|--------------|
+| 重构前 | `codegraph_impact` 评估影响范围 |
+| 修复 bug 时 | `codegraph_callers` / `codegraph_callees` 追溯调用链 |
+| 文件间调用关系 | `codegraph_context` 获取跨文件上下文 |
+| 理解模块架构 | `codegraph_explore` 探索模块结构 |
+
+关键词触发：`重构`、`修改`、`影响`、`调用链`、`谁用了`、`谁调了`、`为什么报错`
+
+## 🔧 Skillopt-Sleep 使用规则
+
+> 技能位于 `.codebuddy/skills/skillopt-sleep/SKILL.md`。
+
+| 命令 | 什么时候调 |
+|------|-----------|
+| `/skillopt dry-run` | 每日开始工作时（≥5 秒报告项目健康度） |
+| `/skillopt run` | 每周总结时（生成周改进提案） |
+| `/skillopt adopt` | 审阅后采纳建议 |
+
+## 记忆存储路径
+
+```text
+update_memory                    → 跨会话长期记忆（错误模式、审计日期）
+.codebuddy/memory/YYYY-MM-DD.md  → 每日工作记忆
+.codebuddy/memory/skillopt-staging/ → skillopt-sleep 暂存
+```

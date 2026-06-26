@@ -1,0 +1,25 @@
+{
+  "name": "self-evolve-framework",
+  "version": "1.0.3",
+  "description": "CodeBuddy 自我进化飞轮 — 仅适用于 CodeBuddy IDE。Post-Edit 验证闭环 + 规则自动推荐 + 离线进化分析",
+  "type": "module",
+  "bin": {
+    "self-evolve": "bin/cli.js"
+  },
+  "scripts": {},
+  "keywords": [
+    "codebuddy",
+    "self-evolution",
+    "ponytail",
+    "skillopt"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/13944709532/self-evolve-framework.git"
+  },
+  "files": [
+    "bin/",
+    "template/"
+  ]
+}
