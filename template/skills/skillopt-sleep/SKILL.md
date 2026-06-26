@@ -51,13 +51,13 @@ AI 从以下来源收集项目数据：
 ## 常用命令（AI 模拟）
 
 ```text
-/skillopt dry-run   → 执行阶段 1-3，输出分析报告，不写任何文件
-/skillopt run       → 执行阶段 1-5，输出暂存清单
-/skillopt adopt     → 采纳暂存清单中的建议
+skillopt-sleep dry-run   → 执行阶段 1-3，输出分析报告，不写任何文件
+skillopt-sleep run       → 执行阶段 1-5，输出暂存清单
+skillopt-sleep adopt     → 采纳暂存清单中的建议
 ```
 
 ## 触发建议
 
-- **每日一次**：工作开始时调 `/skillopt dry-run`，花 30 秒看报告
-- **周五总结**：调 `/skillopt run` 生成周改进提案
+- **每日一次**：工作开始时输入 `skillopt-sleep dry-run`，花 30 秒看报告
+- **周五总结**：输入 `skillopt-sleep run` 生成周改进提案
 - **出现相同错误 2 次后**：不用调，self-evolve rule 会自动触发单条规则创建

@@ -49,10 +49,12 @@ self-evolve rule 在每个对话中 always 激活：
 
 ### 按需检查
 
-```bash
-/skillopt dry-run    # 每日健康检查，5 秒出报告
-/skillopt run        # 周改进提案
-/skillopt adopt      # 采纳建议
+在 CodeBuddy 对话中输入以下内容触发：
+
+```text
+skillopt-sleep dry-run    → 每日健康检查，5 秒出报告
+skillopt-sleep run        → 周改进提案
+skillopt-sleep adopt      → 采纳建议
 ```
 
 ## 前提

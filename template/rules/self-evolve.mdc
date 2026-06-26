@@ -78,11 +78,11 @@ self-evolve.mdc（编排层 — 当前文件）
 
 > 技能位于 `.codebuddy/skills/skillopt-sleep/SKILL.md`。
 
-| 命令 | 什么时候调 |
+| 命令（在对话中输入） | 什么时候调 |
 |------|-----------|
-| `/skillopt dry-run` | 每日开始工作时（≥5 秒报告项目健康度） |
-| `/skillopt run` | 每周总结时（生成周改进提案） |
-| `/skillopt adopt` | 审阅后采纳建议 |
+| `skillopt-sleep dry-run` | 每日开始工作时（≥5 秒报告项目健康度） |
+| `skillopt-sleep run` | 每周总结时（生成周改进提案） |
+| `skillopt-sleep adopt` | 审阅后采纳建议 |
 
 ## 记忆存储路径
 

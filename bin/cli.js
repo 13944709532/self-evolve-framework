@@ -99,9 +99,9 @@ async function init(args) {
 
   console.log(`\n${dryRun ? `🔍 预览完成，共 ${count} 项操作` : `✅ 已完成 ${count} 项操作 — 下次对话即可生效`}`)
   if (!dryRun) {
-    console.log("\n📖 使用指南：")
-    console.log("  /skillopt dry-run  → 每日健康检查")
-    console.log("  /skillopt run      → 周改进提案")
+    console.log("\n📖 使用指南（在 CodeBuddy 对话中输入）：")
+    console.log("  skillopt-sleep dry-run  → 每日健康检查")
+    console.log("  skillopt-sleep run      → 周改进提案")
   }
 }
 
