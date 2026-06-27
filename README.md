@@ -45,13 +45,15 @@ npx self-evolve-framework init --skip-impeccable
 │   ├── self-evolve.mdc    ← 编排层（always 激活）
 │   └── ponytail.mdc       ← 代码最小化原则
 ├── skills/
-│   └── skillopt-sleep/
-│       └── SKILL.md       ← 离线进化分析
+│   ├── skillopt-sleep/
+│   │   └── SKILL.md       ← 离线进化分析
+│   └── impeccable/
+│       └── SKILL.md       ← 设计质量审计
 CLAUDE.md                  ← 追加自我进化章节
 ```
 
-安装过程还会自动运行 `npx impeccable install` 安装 [Impeccable](https://impeccable.style) 设计质量检查工具（可用 `--skip-impeccable` 跳过）。
-首次使用前请在 CodeBuddy 对话中运行 `/impeccable init` 创建设计上下文。<!-- 命令由 Impeccable 技能处理 -->
+> 可选：用 `--skip-impeccable` 跳过 Impeccable skill 安装。
+> 首次使用前在 CodeBuddy 对话中输入 `impeccable init` 创建设计上下文。
 
 ## 使用
 
@@ -78,7 +80,7 @@ impeccable polish          → 页面润色
 
 ### 设计上下文
 
-Impeccable 首次使用前运行 `/impeccable init` 生成 `PRODUCT.md` 和 `DESIGN.md`。<!-- 该命令由 Impeccable 技能处理 -->
+在 CodeBuddy 对话中输入 `impeccable init` 生成 `PRODUCT.md` 和 `DESIGN.md`，让后续审计更精准。
 
 ## 前提
 
@@ -91,13 +93,15 @@ Impeccable 首次使用前运行 `/impeccable init` 生成 `PRODUCT.md` 和 `DES
 ```
 self-evolve-framework/
 ├── package.json          # npm 包配置
-├── bin/cli.js            # CLI 安装工具（含 Impeccable 自动安装）
+├── bin/cli.js            # CLI 安装工具
 ├── template/
 │   ├── rules/
 │   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成）
 │   │   └── ponytail.mdc
 │   └── skills/
-│       └── skillopt-sleep/
-│           └── SKILL.md      ← 离线进化引擎（含设计质量分析）
+│       ├── skillopt-sleep/
+│       │   └── SKILL.md      ← 离线进化引擎（含设计质量分析）
+│       └── impeccable/
+│           └── SKILL.md      ← 设计质量审计 skill
 └── README.md
 ```

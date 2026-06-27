@@ -33,7 +33,7 @@ function showHelp() {
   选项:
     --project <path>      指定目标项目路径（默认当前目录）
     --skip-claude-md      跳过更新 CLAUDE.md
-    --skip-impeccable     跳过安装 Impeccable 设计质量工具
+    --skip-impeccable     跳过复制 Impeccable skill
     --dry-run             预览要复制的文件，不实际写入
 
   示例:
@@ -58,6 +58,11 @@ async function init(args) {
     { src: "skills/skillopt-sleep", dest: ".codebuddy/skills/skillopt-sleep" },
   ]
 
+  // 默认复制 impeccable skill（除非 --skip-impeccable）
+  if (!skipImpeccable) {
+    dirs.push({ src: "skills/impeccable", dest: ".codebuddy/skills/impeccable" })
+  }
+
   let count = 0
   for (const { src, dest } of dirs) {
     const srcDir = resolve(TEMPLATE_DIR, src)
@@ -67,25 +72,6 @@ async function init(args) {
     console.log(`${dryRun ? "  🔍 将复制" : "  ✅ 复制"}  ${src}/  →  ${dest}/`)
     if (!dryRun) cpSync(srcDir, destDir, { recursive: true, force: true })
     count++
-  }
-
-  // 安装 Impeccable 设计质量工具
-  if (!skipImpeccable) {
-    if (!dryRun) {
-      try {
-        console.log("\n📐 正在安装 Impeccable（设计质量检查工具）...")
-        const { execSync } = await import("child_process")
-        execSync("npx --yes impeccable install", { cwd: baseDir, stdio: "inherit" })
-        console.log("  ✅ Impeccable 安装完成")
-        console.log("  ℹ️  运行 /impeccable init 创建设计上下文（DESIGN.md + PRODUCT.md）")
-        count++
-      } catch {
-        console.log("  ⚠️  Impeccable 安装失败（网络问题？），可稍后手动运行 npx impeccable install")
-      }
-    } else {
-      console.log("  🔍 将安装  Impeccable（npx impeccable install）")
-      count++
-    }
   }
 
   // 更新 CLAUDE.md

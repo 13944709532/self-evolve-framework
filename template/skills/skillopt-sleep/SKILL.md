@@ -16,7 +16,7 @@ AI 从以下来源收集项目数据：
 - 已知问题列表
 - 现有规则集（`.codebuddy/rules/`）
 - 设计上下文（`PRODUCT.md`、`DESIGN.md`，如果存在）
-- 前端文件的设计质量报告（如果安装了 Impeccable，运行 `npx impeccable detect` 或读取历史记录）
+- 前端文件的设计质量报告（如果安装了 Impeccable skill，调用 `impeccable detect` 检查项目前端设计质量）
 
 ### 阶段 2：Mine — 挖掘模式
 分析收集到的数据，识别：
