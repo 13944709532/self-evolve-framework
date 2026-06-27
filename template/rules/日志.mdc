@@ -1,0 +1,15 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-11T07:40:04.494Z
+provider: 
+---
+
+*.rs 文件日志级别使用规范：
+use log::{info, error, debug, warn};
+
+info!()：用于记录常规的运行信息，如服务启动、命令调用开始、任务执行成功等
+error!()：用于记录错误信息，如文件读取失败、数据解析失败、命令执行异常等
+debug!()：用于记录调试信息，在开发阶段使用，生产环境可关闭，如参数接收、关键变量打印等
+warn!()：用于记录警告信息，如非关键性问题、文件不存在、配置缺失等

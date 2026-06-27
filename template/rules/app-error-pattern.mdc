@@ -1,0 +1,65 @@
+---
+description: 强制使用 AppError 统一错误类型的规则。
+alwaysApply: true
+---
+
+# AppError Rust 错误规范
+
+> SheetFlow 项目特有规则。所有 `#[command]` 必须返回 `Result<T, AppError>`，
+> 使用 `src-tauri/src/error.rs` 中定义的 6 个变体。
+
+## 强制规则
+
+### 所有 #[command] 必须返回 Result<T, AppError>
+
+```rust
+use crate::error::AppError;
+
+// ✅ 正确
+#[command]
+fn some_command(input: String) -> Result<String, AppError> {
+    Ok(input.trim().to_string())
+}
+
+// ❌ 禁止 — 返回 Result<T, String>
+// ❌ 禁止 — 无错误处理
+// ❌ 禁止 — 使用 anyhow::Error
+```
+
+### AppError 的 6 个变体
+
+| 变体 | 用途 | 示例 |
+|------|------|------|
+| `AppError::FileNotFound` | 文件/路径不存在 | `AppError::FileNotFound(path)` |
+| `AppError::Io` | IO 错误 | `AppError::Io(e)` |
+| `AppError::Parse` | 解析失败（JSON/CSV） | `AppError::Parse(msg)` |
+| `AppError::Validation` | 参数校验失败 | `AppError::Validation(msg)` |
+| `AppError::Execution` | 执行时错误 | `AppError::Execution(msg)` |
+| `AppError::Generic` | 其他错误 | `AppError::Generic(msg)` |
+
+```rust
+// ✅ 正确 — 用对应变体
+Err(AppError::Validation("参数不能为空".into()))
+
+// ❌ 禁止 — 全部用 Generic
+Err(AppError::Generic("参数不能为空".into()))
+```
+
+### 前端接收格式
+
+`AppError` 使用 `#[serde(tag = "type", content = "message")]`，前端收到：
+
+```json
+{ "type": "Validation", "message": "参数不能为空" }
+```
+
+## Validation 错误特殊处理
+
+Validation 类型的错误会 re-throw（不由 invokeSafe 吞掉），供调用方做表单校验反馈。
+
+## 新增命令流程
+
+1. 新建 `.rs` 文件 → `src-tauri/src/commands/`
+2. 在 `mod.rs` 注册模块 + `lib.rs` 注册命令
+3. 返回类型用 `Result<T, AppError>`
+4. 错误用对应的变体，不要全部塞 Generic

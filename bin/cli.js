@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, readdirSync, statSync } from "fs"
 import { join, resolve } from "path"
 import { fileURLToPath } from "url"
 
@@ -9,12 +9,16 @@ const TEMPLATE_DIR = resolve(__dirname, "../template")
 
 const COMMANDS = {
   init: {
-    desc: "安装自我进化飞轮到当前项目",
+    desc: "一键安装全部 CodeBuddy skill + 规则到当前项目",
     run: async (args) => init(args),
   },
   sync: {
-    desc: "从源项目同步配置到当前项目",
+    desc: "从框架项目同步最新的 skill + 规则到当前项目",
     run: async (args) => sync(args),
+  },
+  list: {
+    desc: "列出模板中包含的所有 skill 和规则",
+    run: () => listSkills(),
   },
   help: {
     desc: "显示帮助信息",
@@ -27,20 +31,47 @@ function showHelp() {
   self-evolve — CodeBuddy 自我进化飞轮安装工具
 
   用法:
-    npx self-evolve-framework init       安装到当前项目
-    npx self-evolve-framework sync       从源项目同步
+    npx self-evolve-framework init       一键安装全部 skill + 规则
+    npx self-evolve-framework list       列出模板中包含的所有 skill
+    npx self-evolve-framework sync       从框架同步最新版本
 
   选项:
     --project <path>      指定目标项目路径（默认当前目录）
     --skip-claude-md      跳过更新 CLAUDE.md
-    --skip-impeccable     跳过复制 Impeccable skill
+    --skip-impeccable     跳过 Impeccable 设计质量 skill
     --dry-run             预览要复制的文件，不实际写入
 
   示例:
     npx self-evolve-framework init
     npx self-evolve-framework init --project ./my-app
-    npx self-evolve-framework init --skip-claude-md --skip-impeccable --dry-run
+    npx self-evolve-framework init --skip-claude-md --dry-run
   `)
+}
+
+function listSkills() {
+  const rulesDir = resolve(TEMPLATE_DIR, "rules")
+  const skillsDir = resolve(TEMPLATE_DIR, "skills")
+  console.log("\n📦 模板中包含的规则：")
+  if (existsSync(rulesDir)) {
+    for (const f of readdirSync(rulesDir).filter(f => f.endsWith(".mdc")).sort()) {
+      console.log(`  rules/${f}`)
+    }
+  }
+  console.log("\n🧠 模板中包含的技能：")
+  if (existsSync(skillsDir)) {
+    for (const d of readdirSync(skillsDir).filter(f => statSync(join(skillsDir, f)).isDirectory()).sort()) {
+      const skillMd = join(skillsDir, d, "SKILL.md")
+      let desc = ""
+      if (existsSync(skillMd)) {
+        const firstLine = readFileSync(skillMd, "utf-8").split("\n").find(l => l.startsWith("description:"))
+        if (firstLine) desc = firstLine.replace("description: ", "").trim()
+      }
+      console.log(`  ${d}/  ${desc ? "— " + desc : ""}`)
+    }
+  }
+  if (!existsSync(rulesDir) && !existsSync(skillsDir)) {
+    console.log("  （模板目录为空）")
+  }
 }
 
 async function init(args) {
@@ -52,25 +83,35 @@ async function init(args) {
   console.log(`📍 项目路径: ${baseDir}`)
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
 
-  // 要复制的目录映射：{ 源相对路径 → 目标相对路径 }
-  const dirs = [
-    { src: "rules",  dest: ".codebuddy/rules" },
-    { src: "skills/skillopt-sleep", dest: ".codebuddy/skills/skillopt-sleep" },
-  ]
+  let count = 0
 
-  // 默认复制 impeccable skill（除非 --skip-impeccable）
-  if (!skipImpeccable) {
-    dirs.push({ src: "skills/impeccable", dest: ".codebuddy/skills/impeccable" })
+  // 复制 rules（排除 .mdc 文件可以在以后细化）
+  const rulesSrc = resolve(TEMPLATE_DIR, "rules")
+  if (existsSync(rulesSrc)) {
+    if (!dryRun) {
+      mkdirSync(resolve(baseDir, ".codebuddy/rules"), { recursive: true })
+      cpSync(rulesSrc, resolve(baseDir, ".codebuddy/rules"), { recursive: true, force: true })
+    }
+    const ruleFiles = readdirSync(rulesSrc).filter(f => f.endsWith(".mdc"))
+    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/  →  .codebuddy/rules/（${ruleFiles.length} 个规则）`)
+    count++
   }
 
-  let count = 0
-  for (const { src, dest } of dirs) {
-    const srcDir = resolve(TEMPLATE_DIR, src)
-    const destDir = resolve(baseDir, dest)
-    if (!existsSync(srcDir)) continue
-    if (!dryRun) mkdirSync(destDir, { recursive: true })
-    console.log(`${dryRun ? "  🔍 将复制" : "  ✅ 复制"}  ${src}/  →  ${dest}/`)
-    if (!dryRun) cpSync(srcDir, destDir, { recursive: true, force: true })
+  // 复制 skills（排除 impeccable 如果 --skip-impeccable）
+  const skillsSrc = resolve(TEMPLATE_DIR, "skills")
+  if (existsSync(skillsSrc)) {
+    const skillDirs = readdirSync(skillsSrc).filter(f =>
+      statSync(join(skillsSrc, f)).isDirectory() &&
+      !(skipImpeccable && f === "impeccable")
+    )
+    const skillsDest = resolve(baseDir, ".codebuddy/skills")
+    if (!dryRun) {
+      mkdirSync(skillsDest, { recursive: true })
+      for (const dir of skillDirs) {
+        cpSync(join(skillsSrc, dir), join(skillsDest, dir), { recursive: true, force: true })
+      }
+    }
+    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  skills/  →  .codebuddy/skills/（${skillDirs.length} 个技能）`)
     count++
   }
 
@@ -105,11 +146,12 @@ async function init(args) {
   }
 
   console.log(`\n${dryRun ? `🔍 预览完成，共 ${count} 项操作` : `✅ 已完成 ${count} 项操作 — 下次对话即可生效`}`)
-  if (!dryRun) {
+  if (!dryRun && count > 0) {
     console.log("\n📖 使用指南（在 CodeBuddy 对话中输入）：")
     console.log("  skillopt-sleep dry-run  → 每日健康检查")
     console.log("  skillopt-sleep run      → 周改进提案")
     console.log("  impeccable audit/critique  → 设计质量审查")
+    console.log("  npx self-evolve-framework list  → 查看所有可用 skill")
   }
 }
 

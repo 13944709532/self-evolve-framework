@@ -1,0 +1,167 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-13T05:27:41.155Z
+provider: 
+---
+
+Svelte 5 项目编码规范（100% 严格遵循 Svelte 官方最新标准）
+完全遵循 Svelte 5 官方文档、官方最佳实践、$ 响应式规范、组件设计与目录结构，无任何自定义野路子。
+适用：Svelte 5 + SvelteKit 2/3（纯 Svelte / SvelteKit 通用）
+一、项目结构规范（官方标准）
+纯 Svelte 5 项目结构
+plaintext
+src/
+├── components/       # 可复用 UI 组件（官方推荐）
+├── lib/             # 工具函数、业务逻辑、TS 类型（官方固定目录）
+├── App.svelte       # 根组件
+├── main.ts          # 入口挂载文件
+└── app.css          # 全局样式
+SvelteKit + Svelte 5 项目结构
+plaintext
+src/
+├── routes/           # 路由页面（官方强制）
+├── lib/              # 工具、组件、store、工具函数（官方强制）
+│   ├── components/   # 公共组件
+│   ├── stores/       # 全局状态
+│   └── utils/        # 工具函数
+└── app.html          # 入口 HTML（官方固定）
+官方强制规则：
+工具 / 共享代码必须放在 src/lib/
+禁止随意创建根目录（如 utils/、helpers/）
+组件必须放在 lib/components/ 或同级路由内
+二、响应式规范（Svelte 5 官方唯一标准：$ 响应式）
+1. 声明响应式变量（官方唯一写法）
+svelte
+<script lang="ts">
+  // 基础响应式
+  let count = $state(0);
+
+  // 对象/数组（无需 $state.raw，Svelte 5 自动深度响应式）
+  let user = $state({ name: 'Svelte', age: 5 });
+</script>
+2. 计算属性（官方 $derived）
+svelte
+<script lang="ts">
+  let count = $state(0);
+
+  // 计算属性：自动依赖追踪
+  const double = $derived(count * 2);
+</script>
+3. 副作用（官方 $effect）
+svelte
+<script lang="ts">
+  let count = $state(0);
+
+  // 依赖变化时执行
+  $effect(() => {
+    console.log('count changed:', count);
+  });
+
+  // 挂载时执行一次
+  $effect(() => {
+    console.log('mounted');
+    return () => console.log('destroyed');
+  });
+</script>
+官方禁止：
+禁止使用 Svelte 4 的 $: 语法（已废弃）
+禁止手动实现响应式
+禁止使用第三方响应式库替代原生 API
+三、Props 传参规范（官方 $props()）
+svelte
+<script lang="ts">
+  // 官方标准 Props 声明
+  const { title = '默认标题', count } = $props<{
+    title?: string;
+    count: number;
+  }>();
+</script>
+规则：
+Props 必须使用 $props() 声明
+必须使用 TS 泛型约束类型
+禁止使用 export let（Svelte 5 兼容但不推荐）
+四、事件规范（官方标准）
+1. 子传父（官方 createEventDispatcher）
+svelte
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
+
+  function send() {
+    dispatch('message', { text: 'hello' });
+  }
+</script>
+2. 父组件监听
+svelte
+<Child on:message={(e) => console.log(e.detail)} />
+五、状态管理规范（Svelte 5 官方）
+1. 组件内状态：$state
+2. 全局共享状态：$state + 导出（官方标准）
+ts
+// src/lib/stores/appStore.ts
+export const theme = $state('light');
+export const user = $state(null);
+官方规则：
+全局状态直接使用 $state 声明并导出
+无需第三方库
+状态文件放在 src/lib/stores/
+六、TypeScript 规范（官方强制）
+所有文件必须使用 lang="ts"
+svelte
+<script lang="ts">
+禁止使用 any
+接口 / 类型放在 src/lib/types/
+Props、事件、返回值必须强类型定义
+七、组件规范（官方）
+1. 组件命名：大驼峰
+Button.svelte、UserForm.svelte
+2. 样式规范：优先使用 Tailwind 原子类
+- 优先使用 Tailwind CSS v4 原子类（遵循 Tailwind CSS v4 规范）
+- 少量组件特有样式可使用 `<style scoped>`（避免污染全局）
+- 禁止大量自定义原生 CSS 替代原子类
+svelte
+<!-- 推荐：优先使用 Tailwind 原子类 -->
+<div class="relative w-full p-4 flex items-center gap-2 rounded-lg bg-white">
+  <slot />
+</div>
+
+<!-- 仅对组件特有样式使用 scoped -->
+<style>
+  .special-effect { }
+</style>
+3. 逻辑规范
+业务逻辑与 UI 分离
+复杂逻辑抽离到 src/lib/
+组件只做 UI 渲染
+八、指令规范（官方原生）
+{#if}
+{#each}
+{#snippet}（Svelte 5 官方插槽）
+{#key}
+禁止使用第三方指令 / 自定义语法扩展
+九、Svelte 5 废弃语法（严禁使用）
+❌ 禁止 $: 计算属性
+❌ 禁止 export let props
+❌ 禁止 <slot key={}> 旧插槽
+❌ 禁止手动 onMount、beforeUpdate（改用 $effect）
+十、Svelte 5 + Tauri + Svelte Flow 联合规范
+前端 UI：遵循 Svelte 5 官方
+流程图：遵循 Svelte Flow 官方
+桌面能力：遵循 Tauri 官方
+IPC 调用：Tauri 官方 invoke
+状态：Svelte 5 $state
+十一、AI 编码强制规则
+必须使用 **Svelte 5 官方 $ 响应式**（$state/$derived / $effect\）
+Props 必须使用 $props()
+共享状态必须放在 src/lib/stores/
+工具函数必须放在 src/lib/utils/
+组件必须放在 src/lib/components/
+禁止使用任何 Svelte 4 废弃语法
+必须使用 TypeScript
+总结（Svelte 5 官方核心 4 条）
+响应式：$state / $derived / $effect
+Props：$props()
+目录：src/lib/ 为唯一共享目录
+无第三方响应式 / 无旧语法

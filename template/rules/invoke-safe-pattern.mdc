@@ -1,0 +1,53 @@
+---
+description: 强制使用 invokeSafe + INVOKE_ERROR 模式的规则。防止前端 IPC 调用错误处理不一致。
+alwaysApply: true
+---
+
+# invokeSafe 调用规范
+
+> SheetFlow 项目特有规则。当 Rust `#[command]` 返回 `Result<T, AppError>` 时，`Ok(())` 会被序列化为 JSON `null`，
+> 导致 `if (!result)` 错误地认为"结果是空"。必须统一使用 `invokeSafe` + `=== INVOKE_ERROR` 判断。
+
+## 强制规则
+
+### 所有 IPC 调用必须使用 invokeSafe
+
+```typescript
+import { invokeSafe, INVOKE_ERROR } from '$lib/utils/invokeSafe'
+
+// ✅ 正确
+const result = await invokeSafe('some_command', { param: value })
+if (result === INVOKE_ERROR) return
+
+// ❌ 禁止 — 直接 invoke
+const result = await invoke('some_command', { param: value })
+
+// ❌ 禁止 — 用 !result 判断错误
+if (!result)  // Ok(()) 是 null，会被误判
+
+// ❌ 禁止 — 用 result === null 判断
+if (result === null)  // 同上
+```
+
+### 判断错误的唯一正确方式
+
+```typescript
+// ✅ 唯一正确
+if (result === INVOKE_ERROR) { /* 错误处理 */ }
+
+// ❌ 禁止的所有写法
+if (!result)          // Ok(()) 是 null
+if (result == null)   // 宽松比较也会命中 null
+if (result === null)  // 明确 null 检查也错
+```
+
+## 例外
+
+只有不需要返回值的纯 UI 操作（如 `appWindow.close()`）可以不经过 invokeSafe。
+
+## 验证
+
+```typescript
+// commit 前自审：搜索 invoke( 是否被直接使用
+// grep -n "invoke(" src/**/*.svelte src/**/*.ts | grep -v "invokeSafe"
+```

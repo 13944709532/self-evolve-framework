@@ -1,0 +1,145 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-13T04:29:03.207Z
+provider: 
+---
+
+Tauri 项目编码规范（严格遵循 Tauri 官方最新规范）
+完全对齐 Tauri 官方文档、官方最佳实践、安全准则、架构设计与 API 约定，无自定义扩展、无野路子写法。
+适用：Tauri v2 + Tauri CLI 官方标准，前端可搭配 Svelte / React / Vue / Vanilla。
+一、核心架构规范（官方强制标准）
+Tauri 官方唯一架构：
+前端层：Web 技术（HTML/JS/CSS/ 框架）
+核心层：Rust 后端（src-tauri/）
+IPC 通信：唯一官方通信机制（禁止直接跨域 / 原生调用）
+命令式 API：前端只能调用 Rust 注册的命令，不能直接操作系统
+二、项目结构规范（官方固定目录结构）
+plaintext
+你的项目/
+├── src/                # 前端源码（官方标准）
+├── src-tauri/           # Tauri 核心目录（官方固定名称，禁止修改）
+│   ├── build.rs        # 官方构建脚本（禁止删除）
+│   ├── Cargo.toml      # Rust 配置（严格遵循官方格式）
+│   ├── tauri.conf.json # Tauri 主配置（官方 schema 严格校验）
+│   └── src/
+│       ├── lib.rs      # 官方推荐：命令与逻辑入口
+│       └── main.rs     # 程序主入口（官方固定代码）
+└── package.json        # 前端依赖 + Tauri 脚本
+三、tauri.conf.json 规范（官方严格 Schema）
+1. 必须遵守的官方字段规则
+json
+{
+  "$schema": "./node_modules/@tauri-apps/cli/schema.json",
+  "productName": "你的应用名",
+  "version": "0.1.0",
+  "identifier": "com.你的域名.应用名",
+  "build": {
+    "beforeDevCommand": "你的前端启动命令",
+    "beforeBuildCommand": "你的前端构建命令",
+    "devPath": "http://你的开发地址",
+    "distDir": "../dist"  // 前端输出目录（官方标准）
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/256x256.png",
+      "icons/512x512.png"
+    ]
+  }
+}
+2. 官方强制规则
+必须包含 $schema 用于校验
+identifier 必须是反向域名格式
+icon 必须提供多尺寸，严格按官方要求
+禁止添加非官方字段
+四、Rust 代码规范（官方标准）
+1. main.rs（官方固定模板）
+rust
+运行
+// 官方唯一标准写法，禁止修改
+fn main() {
+  tauri::Builder::default()
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
+}
+2. 命令注册规范（官方唯一方式）
+rust
+运行
+// lib.rs（官方推荐）
+use tauri::command;
+
+// 官方标准命令
+#[command]
+fn greet(name: &str) -> String {
+    format!("Hello, {}!", name)
+}
+
+// 官方标准初始化
+#[tauri::main]
+fn main() {
+  tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![greet]) // 命令注册
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
+}
+3. Rust 调用规范
+所有前端可调用功能必须用 #[command] 注册
+禁止无权限、无校验的系统操作
+错误处理必须使用 Result<T, E>
+五、IPC / 前端调用规范（官方安全准则）
+1. 前端调用 Rust 命令（官方唯一 API）
+javascript
+运行
+import { invoke } from '@tauri-apps/api/core'
+
+// 官方标准调用方式
+const result = await invoke('greet', { name: 'Tauri' })
+2. 官方安全铁律
+禁止前端直接访问文件系统 / 网络 / 原生能力
+所有操作必须走 Rust 命令
+最小权限原则：只声明需要的权限
+六、权限规范（官方 CSP + 权限白名单）
+1. tauri.conf.json 权限声明
+json
+"permissions": [
+  "path",
+  "fs:read",
+  "window:allow-close"
+]
+只添加业务需要的权限
+禁止使用 * 通配符
+严格遵循官方权限列表
+2. CSP 内容安全策略（官方强制）
+json
+"csp": "default-src 'self'; img-src 'self' data: asset:;"
+禁止 unsafe-inline、unsafe-eval
+遵循最小信任原则
+七、窗口管理规范（官方 API）
+javascript
+运行
+import { getCurrentWindow } from '@tauri-apps/api/window'
+
+// 官方标准用法
+const appWindow = getCurrentWindow()
+await appWindow.maximize()
+await appWindow.setSize({ width: 800, height: 600 })
+禁止直接操作 DOM window 模拟窗口
+只使用官方 @tauri-apps/api/window
+八、插件使用规范（官方）
+只使用 @tauri-apps/plugin-* 官方插件
+禁止引入第三方原生桥接库
+插件必须在 tauri.conf.json 正确配置
+九、开发与构建命令（官方唯一标准）
+bash
+运行
+# 开发模式
+tauri dev
+
+# 生产构建
+tauri build
+禁止使用自定义编译脚本绕过官方 CLI。

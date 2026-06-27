@@ -1,0 +1,10 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-10T07:40:32.184Z
+provider: 
+---
+
+避免发生 TDZ 问题
+避免发生 函数 作用域问题

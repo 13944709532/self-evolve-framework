@@ -1,0 +1,176 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-13T04:27:39.806Z
+provider: 
+---
+
+Svelte Flow 项目编码规范（严格遵循 xyflow 官方文档规范）
+适用：@xyflow/svelte 官方标准 | Svelte 4 / Svelte 5 | TypeScript所有规则完全对齐官方 API、官方最佳实践，不自定义野写法。
+一、依赖与版本规范（官方标准）
+唯一官方包：@xyflow/svelte，不安装旧版拆分包、不混用 ReactFlow 依赖。
+始终使用官方稳定版，不装 beta/rc 预发布版。
+安装命令（官方推荐）：
+bash
+运行
+pnpm add @xyflow/svelte
+# 或 npm/yarn
+npm install @xyflow/svelte
+样式引入遵循官方：全局仅引入一次官方内置样式
+ts
+import '@xyflow/svelte/dist/style.css';
+二、项目目录结构（官方组件分层规范）
+严格按官方「画布 - 节点 - 边 - 类型 - 工具」分层，组件统一放在 src/lib/components/ 下（遵循 Svelte 5 官方标准）：
+plaintext
+src/
+├── lib/
+│   ├── xyflow/
+│   │   ├── types.ts          # 官方衍生 TS 类型定义
+│   │   ├── node-types.ts    # 注册自定义节点类型（官方 nodeTypes 规范）
+│   │   ├── edge-types.ts    # 注册自定义边类型（官方 edgeTypes 规范）
+│   │   └── constants.ts     # 画布默认配置、网格、缩放常量
+│   ├── components/
+│   │   └── xyflow/
+│   │       ├── FlowCanvas.svelte       # 根画布容器（官方 SvelteFlow 入口）
+│   │       ├── nodes/                  # 所有自定义节点组件
+│   │       │   ├── InputNode.svelte
+│   │       │   ├── DefaultNode.svelte
+│   │       │   └── OutputNode.svelte
+│   │       └── edges/                  # 所有自定义边组件
+│   │           └── CustomEdge.svelte
+│   └── stores/
+│       └── flowStore.ts      # 遵循官方不可变规则管理 nodes / edges
+└── ...
+三、基础 API 使用规范（严格对齐官方）
+1. SvelteFlow 组件属性规范
+只使用官方原生 Props，不私自封装冗余属性；必须遵循官方默认行为：
+panOnDrag、zoomOnScroll 官方默认行为保留
+fitView 仅初始化按需使用
+snapToGrid、snapGrid 严格按官方类型传值
+官方标准模板（Svelte 5 语法 + Tailwind）
+svelte
+<script lang="ts">
+  import { SvelteFlow, Controls, MiniMap, Background } from '@xyflow/svelte';
+  import '@xyflow/svelte/dist/style.css';
+  import { nodeTypes } from '$lib/xyflow/node-types';
+  import type { Node, Edge } from '@xyflow/svelte';
+
+  const { nodes = $bindable(), edges = $bindable() } = $props<{
+    nodes?: Node[];
+    edges?: Edge[];
+  }>();
+</script>
+
+<!-- 优先使用 Tailwind 原子类 -->
+<div class="w-full h-full min-h-[600px]">
+  <SvelteFlow
+    bind:nodes
+    bind:edges
+    {nodeTypes}
+    fitView
+    panOnDrag={true}
+    zoomOnScroll={true}
+    snapToGrid={false}
+  >
+    <Controls />
+    <MiniMap />
+    <Background />
+  </SvelteFlow>
+</div>
+2. 容器布局强制规则（官方硬性要求）
+官方文档明确：SvelteFlow 必须挂载在有明确宽高的父容器内
+禁止无高度容器、禁止仅靠内容自适应
+所有画布外层容器必须定义 width / height
+四、节点（Node）官方规范
+1. 节点结构遵循官方标准字段
+必须严格遵循官方 Node 类型结构：
+ts
+interface Node {
+  id: string;
+  type?: string;
+  position: { x: number; y: number };
+  data: Record<string, any>;
+  selected?: boolean;
+  dragging?: boolean;
+}
+不得私自新增顶层自定义字段，自定义数据全部放在 data 内部
+id 全局唯一，遵循官方唯一标识规则
+2. Handle 连接点官方规范
+严格区分官方两种类型：
+type="target"：入边 接收连接
+type="source"：出边 发起连接
+位置仅使用官方枚举 Position.Left/Right/Top/Bottom
+自定义节点内 只能渲染 Handle + UI，不写业务逻辑、不写状态变更
+官方标准自定义节点模板（Svelte 5 语法）：
+svelte
+<script lang="ts">
+  import { Handle, Position } from '@xyflow/svelte';
+  import type { NodeProps } from '@xyflow/svelte';
+
+  const { data } = $props<{
+    data: NodeProps['data'];
+  }>();
+</script>
+
+<div class="custom-node">
+  <Handle type="target" position={Position.Left} />
+  <span>{data.label}</span>
+  <Handle type="source" position={Position.Right} />
+</div>
+五、自定义节点 / 边 注册规范（官方 nodeTypes /edgeTypes）
+必须在单独 node-types.ts 集中注册，遵循官方映射规则
+键名对应节点 type 字段，值为 Svelte 组件
+ts
+// $lib/xyflow/node-types.ts
+import InputNode from '$components/xyflow/nodes/InputNode.svelte';
+import DefaultNode from '$components/xyflow/nodes/DefaultNode.svelte';
+
+// 官方标准 nodeTypes 导出
+export const nodeTypes = {
+  input: InputNode,
+  default: DefaultNode
+};
+使用时直接传给 <SvelteFlow {nodeTypes} />，完全遵循官方注册机制。
+六、状态更新不可变规范（官方核心原则）
+官方明确：禁止直接变异 nodes /edges 数组✅ 正确（官方推荐不可变更新）
+ts
+// 新增
+nodes = [...nodes, newNode];
+// 更新
+nodes = nodes.map(n => n.id === id ? {...n, data: newData} : n);
+// 删除
+nodes = nodes.filter(n => n.id !== id);
+❌ 禁止
+ts
+nodes.push()
+nodes.splice()
+nodes[index] = xxx
+统一用 store 管理，严格遵守官方不可变数据流。
+七、事件回调规范（官方原生事件）
+仅使用官方内置回调，不封装自定义事件透传：
+onConnect 连线创建
+onNodeClick 节点点击
+onPaneClick 画布空白点击
+onNodesChange / onEdgesChange 官方数据流变更
+所有事件逻辑写在 FlowCanvas 父组件，自定义节点只做 UI 展示，符合官方组件设计思想。
+八、TypeScript 类型规范（官方类型优先）
+所有节点、边、位置、Handle 类型全部导入官方内置类型
+ts
+import type { 
+  Node, Edge, NodeProps, EdgeProps, 
+  Position, Connection 
+} from '@xyflow/svelte';
+不使用 any，自定义业务数据基于官方 data 扩展接口
+禁止私自改写官方类型定义，如需扩展采用交叉类型
+九、样式与主题规范
+仅引入官方样式一次，不重复导入
+自定义节点样式优先使用 Tailwind CSS v4 原子类（遵循 Tailwind CSS v4 规范）
+少量组件特有样式可使用 <style scoped>（避免污染全局）
+画布内置控件（Controls、MiniMap、Background）直接使用官方组件，不自己复刻
+十、AI 编码强制约束（基于官方规范）
+新增节点必须放入 components/xyflow/nodes 并在 node-types.ts 注册；
+更新 nodes/edges 严格使用不可变替换，禁止原地变异；
+SvelteFlow 父容器必须设置固定宽高，遵循官方布局要求；
+自定义节点仅允许包含 Handle + UI，业务逻辑统一放在外层画布 / Store；
+所有类型、事件、属性只使用官方原生 API，不造私有语法。

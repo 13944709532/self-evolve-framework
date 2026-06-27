@@ -1,0 +1,23 @@
+---
+description: CodeBuddy 工具使用指南 — 何时用哪个工具
+alwaysApply: true
+---
+
+## CodeBuddy 代码探索指南
+
+### 工具选择原则
+
+| 问题类型 | 推荐工具 |
+|---------|---------|
+| "查找名为 X 的定义" | `search_content`（精确匹配）或 `task(code-explorer)`（范围探索） |
+| "X 被哪些地方调用？" | `search_content` 搜索引用 + `codebase_search` 语义搜索 |
+| "这个文件的结构是什么？" | `read_file` 读取文件 |
+| "目录下有哪些文件？" | `list_dir` 或 `search_file` 通配符匹配 |
+| "给我整个模块的上下文" | `task(code-explorer)` 子代理批量探索 |
+
+### 规则
+
+- **直接回答，不委托探索。** 对于架构问题，先 `read_file` 关键文件，再 `search_content` 追踪引用。不需要启动子代理来读文件。
+- **优先精确匹配。** 知道符号名时用 `search_content`（正则匹配），不确定时用 `codebase_search`（语义搜索）。
+- **批量读取优于多次单读。** 需要理解多个文件时一次 `read_file` 多文件，不要分多次调用。
+- **`task(code-explorer)` 适合大范围代码探索**（跨多个目录、多个模式搜索），简单查找直接用 `search_content`。
