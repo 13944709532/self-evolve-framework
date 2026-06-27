@@ -151,6 +151,7 @@ async function init(args) {
     console.log("  skillopt-sleep dry-run  → 每日健康检查")
     console.log("  skillopt-sleep run      → 周改进提案")
     console.log("  impeccable audit/critique  → 设计质量审查")
+    console.log("  ponytail                 → 代码最小化（懒人模式）")
     console.log("  npx self-evolve-framework list  → 查看所有可用 skill")
   }
 }

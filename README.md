@@ -42,13 +42,17 @@ npx self-evolve-framework init --skip-impeccable
 ```
 .codebuddy/
 ├── rules/
-│   ├── self-evolve.mdc    ← 编排层（always 激活）
+│   ├── self-evolve.mdc    ← 进化编排（always 激活）
 │   └── ponytail.mdc       ← 代码最小化原则
 ├── skills/
-│   ├── skillopt-sleep/
-│   │   └── SKILL.md       ← 离线进化分析
-│   └── impeccable/
-│       └── SKILL.md       ← 设计质量审计
+│   ├── skillopt-sleep/    ← 离线进化分析
+│   ├── impeccable/        ← 设计质量审计（含脚本和参考文档）
+│   ├── ponytail/          ← 代码最小化主 skill
+│   ├── ponytail-audit/    ← 代码审计
+│   ├── ponytail-debt/     ← 技术债分析
+│   ├── ponytail-gain/     ← 收益分析
+│   ├── ponytail-help/     ← 帮助文档
+│   └── ponytail-review/   ← 代码审查
 CLAUDE.md                  ← 追加自我进化章节
 ```
 
@@ -76,6 +80,9 @@ skillopt-sleep adopt      → 采纳建议
 impeccable audit           → 设计质量技术审计
 impeccable critique        → 设计评审
 impeccable polish          → 页面润色
+ponytail                   → 代码最小化懒人模式
+ponytail audit             → 代码审计
+ponytail review            → 代码审查
 ```
 
 ### 设计上下文
@@ -96,12 +103,16 @@ self-evolve-framework/
 ├── bin/cli.js            # CLI 安装工具
 ├── template/
 │   ├── rules/
-│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成）
-│   │   └── ponytail.mdc
+│   │   ├── self-evolve.mdc   ← 进化编排
+│   │   └── ponytail.mdc      ← 代码最小化原则
 │   └── skills/
-│       ├── skillopt-sleep/
-│       │   └── SKILL.md      ← 离线进化引擎（含设计质量分析）
-│       └── impeccable/
-│           └── SKILL.md      ← 设计质量审计 skill
+│       ├── skillopt-sleep/   ← 离线进化引擎
+│       ├── impeccable/       ← 设计质量审计（含脚本）
+│       ├── ponytail/         ← 代码最小化主 skill
+│       ├── ponytail-audit/   ← 代码审计
+│       ├── ponytail-debt/    ← 技术债分析
+│       ├── ponytail-gain/    ← 收益分析
+│       ├── ponytail-help/    ← 帮助
+│       └── ponytail-review/  ← 代码审查
 └── README.md
 ```
