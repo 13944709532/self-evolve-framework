@@ -115,3 +115,19 @@ terse prose). "stop ponytail" / "normal mode": revert. Level persists until
 changed or session end.
 
 The shortest path to done is the right path.
+
+## 执行引擎
+
+此 skill 附带 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) 的完整执行组件：
+
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| MCP 服务器 | `scripts/mcp/` | 与 IDE 深度集成，提供上下文感知的懒人建议 |
+| Hooks | `scripts/hooks/` | 代码提交/保存时自动触发懒人审计 |
+| AGENTS.md | 项目根目录 | 安装后自动注入的 agent 指令 |
+
+首次安装后，如果需要激活 MCP 集成：
+
+```bash
+node .codebuddy/skills/ponytail/scripts/mcp/index.js
+```
