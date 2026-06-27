@@ -33,12 +33,13 @@ function showHelp() {
   选项:
     --project <path>      指定目标项目路径（默认当前目录）
     --skip-claude-md      跳过更新 CLAUDE.md
+    --skip-impeccable     跳过安装 Impeccable 设计质量工具
     --dry-run             预览要复制的文件，不实际写入
 
   示例:
     npx self-evolve-framework init
     npx self-evolve-framework init --project ./my-app
-    npx self-evolve-framework init --skip-claude-md --dry-run
+    npx self-evolve-framework init --skip-claude-md --skip-impeccable --dry-run
   `)
 }
 
@@ -46,6 +47,7 @@ async function init(args) {
   const baseDir = resolve(args["--project"] || process.cwd())
   const dryRun = !!args["--dry-run"]
   const skipClaudeMd = !!args["--skip-claude-md"]
+  const skipImpeccable = !!args["--skip-impeccable"]
 
   console.log(`📍 项目路径: ${baseDir}`)
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
@@ -67,6 +69,25 @@ async function init(args) {
     count++
   }
 
+  // 安装 Impeccable 设计质量工具
+  if (!skipImpeccable) {
+    if (!dryRun) {
+      try {
+        console.log("\n📐 正在安装 Impeccable（设计质量检查工具）...")
+        const { execSync } = await import("child_process")
+        execSync("npx --yes impeccable install", { cwd: baseDir, stdio: "inherit" })
+        console.log("  ✅ Impeccable 安装完成")
+        console.log("  ℹ️  运行 /impeccable init 创建设计上下文（DESIGN.md + PRODUCT.md）")
+        count++
+      } catch {
+        console.log("  ⚠️  Impeccable 安装失败（网络问题？），可稍后手动运行 npx impeccable install")
+      }
+    } else {
+      console.log("  🔍 将安装  Impeccable（npx impeccable install）")
+      count++
+    }
+  }
+
   // 更新 CLAUDE.md
   if (!skipClaudeMd) {
     const claudePath = resolve(baseDir, "CLAUDE.md")
@@ -74,7 +95,7 @@ async function init(args) {
 ## 自我进化（always 激活）
 
 统一由 \`.codebuddy/rules/self-evolve.mdc\` 编排。
-调度 Ponytail（代码最小化）+ CodeGraph（依赖分析）+ Skillopt-Sleep（离线进化）
+调度 Ponytail（代码最小化）+ CodeGraph（依赖分析）+ Skillopt-Sleep（离线进化）+ Impeccable（设计质量）
 → 形成 **post-edit 验证 → 错误记忆 → 规则推荐** 闭环。
 `
     if (existsSync(claudePath)) {
@@ -102,6 +123,7 @@ async function init(args) {
     console.log("\n📖 使用指南（在 CodeBuddy 对话中输入）：")
     console.log("  skillopt-sleep dry-run  → 每日健康检查")
     console.log("  skillopt-sleep run      → 周改进提案")
+    console.log("  impeccable audit/critique  → 设计质量审查")
   }
 }
 

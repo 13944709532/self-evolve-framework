@@ -32,6 +32,9 @@ npx self-evolve-framework init --dry-run
 
 # 跳过 CLAUDE.md 更新
 npx self-evolve-framework init --skip-claude-md
+
+# 跳过 Impeccable 设计质量工具安装
+npx self-evolve-framework init --skip-impeccable
 ```
 
 ## 安装了什么
@@ -47,13 +50,16 @@ npx self-evolve-framework init --skip-claude-md
 CLAUDE.md                  ← 追加自我进化章节
 ```
 
+安装过程还会自动运行 `npx impeccable install` 安装 [Impeccable](https://impeccable.style) 设计质量检查工具（可用 `--skip-impeccable` 跳过）。
+首次使用前请在 CodeBuddy 对话中运行 `/impeccable init` 创建设计上下文。<!-- 命令由 Impeccable 技能处理 -->
+
 ## 使用
 
 ### 每日自动生效
 
 self-evolve rule 在每个对话中 always 激活：
-- **改代码前** → Ponytail 检查 + CodeGraph 影响评估
-- **改代码后** → 自动 `npm run build` + `cargo check` 验证
+- **改代码前** → Ponytail 检查 + CodeGraph 影响评估 + 核心边界审计
+- **改代码后** → 自动 `npm run build` + `cargo check` 验证 + Impeccable 设计审计
 - **验证失败** → 分析修复 → 记录到记忆 → ≥2 次同模式 → 自动写规则
 - **会话结束** → 超 7 天未审计 → 提醒
 
@@ -65,7 +71,14 @@ self-evolve rule 在每个对话中 always 激活：
 skillopt-sleep dry-run    → 每日健康检查，5 秒出报告
 skillopt-sleep run        → 周改进提案
 skillopt-sleep adopt      → 采纳建议
+impeccable audit           → 设计质量技术审计
+impeccable critique        → 设计评审
+impeccable polish          → 页面润色
 ```
+
+### 设计上下文
+
+Impeccable 首次使用前运行 `/impeccable init` 生成 `PRODUCT.md` 和 `DESIGN.md`。<!-- 该命令由 Impeccable 技能处理 -->
 
 ## 前提
 
@@ -78,13 +91,13 @@ skillopt-sleep adopt      → 采纳建议
 ```
 self-evolve-framework/
 ├── package.json          # npm 包配置
-├── bin/cli.js            # CLI 安装工具
+├── bin/cli.js            # CLI 安装工具（含 Impeccable 自动安装）
 ├── template/
 │   ├── rules/
-│   │   ├── self-evolve.mdc
+│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成）
 │   │   └── ponytail.mdc
 │   └── skills/
 │       └── skillopt-sleep/
-│           └── SKILL.md
+│           └── SKILL.md      ← 离线进化引擎（含设计质量分析）
 └── README.md
 ```
