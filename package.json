@@ -1,6 +1,6 @@
 {
   "name": "self-evolve-framework",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "CodeBuddy 自我进化飞轮 — 仅适用于 CodeBuddy IDE。Post-Edit 验证闭环 + 规则自动推荐 + 离线进化分析",
   "type": "module",
   "bin": {
