@@ -80,3 +80,45 @@ python -m .codebuddy.skills.skillopt-sleep.scripts.python \
 ## 内核
 
 执行引擎来自 [microsoft/SkillOpt](https://github.com/microsoft/SkillOpt) — 由微软研究院开源的 skill 文档训练框架。
+
+## 文件结构
+
+```
+.codebuddy/skills/skillopt-sleep/
+├── SKILL.md                  ← 本指令文件
+├── scripts/
+│   ├── python/               ← 睡眠引擎（SkillOpt-Sleep）
+│   │   ├── cycle.py          → 六阶段循环（Harvest/Mine/Replay/Consolidate/Gate/Adopt）
+│   │   ├── harvest.py        → 会话历史收集
+│   │   ├── mine.py           → 模式挖掘
+│   │   ├── replay.py         → 回放验证
+│   │   ├── consolidate.py    → 合并优化
+│   │   ├── gate.py           → Held-out 验证门控
+│   │   ├── staging.py        → 暂存管理
+│   │   └── experiments/      → 基准实验
+│   ├── framework/            ← 核心训练框架（SkillOpt）
+│   │   ├── engine/trainer.py → Skill 训练器
+│   │   ├── envs/             → 基准环境（alfworld/docvqa/searchqa 等）
+│   │   ├── optimizer/        → 有界编辑优化器
+│   │   ├── prompts/          → Analyst/Merge/Rewrite 提示模板
+│   │   ├── model/            → LLM 后端
+│   │   ├── gradient/         → 梯度计算
+│   │   ├── evaluation/       → 评估
+│   │   └── scheduler/        → 调度
+│   └── shell/                ← 辅助脚本
+├── configs/
+│   ├── _base_/default.yaml   ← 默认配置
+│   ├── alfworld/             → AlfWorld 基准配置
+│   ├── docvqa/               → DocVQA 基准配置
+│   ├── searchqa/             → SearchQA 基准配置
+│   └── features/             → 特性开关（soft_gate）
+```
+
+## 进阶用法（训练新 skill）
+
+```bash
+cd .codebuddy/skills/skillopt-sleep/scripts/framework
+python -m skillopt.engine.trainer --config ../../configs/_base_/default.yaml
+```
+
+详细的训练配置见 `configs/` 中各基准的 YAML 文件。
