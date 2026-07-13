@@ -1,5 +1,5 @@
 ---
-description: Vue 3 框架层编码规则与多发问题（组件命名、v-model、响应式、弹窗懒加载、骨架屏、DOM 时序、跨 Windows 样式）
+description: Vue 3 框架层编码规则与多发问题（组件命名、v-model、响应式、弹窗懒加载、DOM 时序）
 alwaysApply: false
 ---
 
@@ -27,7 +27,6 @@ alwaysApply: false
 ### F8. 弹窗懒加载 / 异步渲染
 - 弹窗先 `visible/open = true` 再加载数据；用 `setTimeout(() => loadData(), 0)` 推迟到下一宏任务，确保弹窗动画优先渲染。
 - **禁止**弹窗打开前 `await` 等数据就绪（阻塞显示）。表格设 `:loading`，大数据用虚拟滚动（`:scroll`），默认每页 ≤50 条。
-- 骨架屏用 `<a-skeleton>` 独立占位，**禁止**用 `<a-spin>` 包裹整个卡片列表。骨架屏结构/高度必须与实际卡片一致，避免加载完成布局跳跃。
 
 ### F12. DOM 时序
 - 获取 DOM 尺寸前加 `setTimeout(..., 50)` 确保 WebView2 渲染完成；不要在 `onMounted` 立即读 `offsetHeight/Width`（容器可能未布局）。
@@ -37,10 +36,6 @@ alwaysApply: false
 `:root` 集中定义设计令牌，页面引用 `var(--xxx)`（详见 `general.mdc` F6）。新增 token 加到 `:root`，禁止 scoped 内新增。
 
 ## 三、多发问题处理模式
-
-### P12. 跨 Windows 版本样式差异
-- Win10/Win11 下 antd 按钮默认外边距不一致、分页器页码/省略号垂直不居中。
-- 全局保留 `.ant-btn { margin: 0 !important; }`（解决跨版本差异，**禁止**移除）；分页器居中作用在 item 内容层（`li` 内的 `a` / `.ant-pagination-item-link` 补 `height:100%`），改 `li` 本身无效。
 
 ### P-vue-1. 数据刷新竞态
 导入/删除成功后数据选择卡片不自动刷新，需手动刷新页面。在明确的完成事件回调里调用 `refresh()`；注意新表首次创建时 `table_exists` 竞态（导入期间查询可能返回 false）。

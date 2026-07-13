@@ -48,6 +48,7 @@ npx self-evolve-framework init --skip-impeccable
 │       ├── general.mdc      ← 跨语言通用约束（always）
 │       ├── typescript.mdc   ← TS/JS 前端语言层（按需）
 │       ├── vue.mdc          ← Vue 框架层（按需）
+│       ├── ant-design-vue.mdc← ant-design-vue 组件库层（按需）
 │       ├── svelte.mdc       ← Svelte 5 框架层（按需）
 │       ├── tailwind.mdc     ← Tailwind CSS v4 框架层（按需）
 │       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
@@ -112,6 +113,7 @@ self-evolve-framework/
 │   │       ├── general.mdc     ← 跨语言通用约束（always）
 │   │       ├── typescript.mdc  ← TS/JS 前端语言层（按需）
 │   │       ├── vue.mdc         ← Vue 框架层（按需）
+│   │       ├── ant-design-vue.mdc← ant-design-vue 组件库层（按需）
 │   │       ├── svelte.mdc      ← Svelte 5 框架层（按需）
 │   │       ├── tailwind.mdc    ← Tailwind CSS v4 框架层（按需）
 │   │       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）

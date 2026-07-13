@@ -1,6 +1,6 @@
 # 知识库（Knowledge Base）
 
-> 经验知识库按**语言 / 框架 / 组件库**分目录组织，源自长期项目（Tauri 2 + Vue 3 + Svelte 5 + shadcn-svelte + Rust 桌面应用等）的踩坑沉淀。
+> 经验知识库按**语言 / 框架 / 组件库**分目录组织，源自长期项目（Tauri 2 + Vue 3 + ant-design-vue + Svelte 5 + shadcn-svelte + Rust 桌面应用等）的踩坑沉淀。
 > 由 `self-evolve.mdc` 编排层统一调度，是「post-edit 验证 → 错误记忆 → 规则推荐」飞轮的经验支撑层。
 
 ## 目录结构
@@ -11,8 +11,10 @@ knowledge/
 ├── general.mdc        ← 跨语言通用约束（always 激活）
 ├── typescript.mdc     ← TS/JS 前端语言层（按需加载）
 ├── vue.mdc            ← Vue 框架层（按需加载）
+├── ant-design-vue.mdc ← ant-design-vue 组件库层（按需加载）
 ├── svelte.mdc         ← Svelte 5 框架层（按需加载）
 ├── tailwind.mdc       ← Tailwind CSS v4 框架层（按需加载）
+├── shadcn-svelte.mdc  ← shadcn-svelte 组件库层（按需加载）
 ├── rust.mdc           ← Rust 后端层（按需加载）
 └── tauri.mdc          ← Tauri 框架层（按需加载）
 ```
@@ -43,6 +45,7 @@ knowledge/
 6. 仅 shadcn-svelte（组件引入、API、尺寸/Portal/下拉防误触、重复弹窗抽壳）→ `shadcn-svelte.mdc`
 7. 仅 Rust 语言层（ownership、DB 读取、XLSX、命令注册、AppError）→ `rust.mdc`
 8. 仅 Tauri 框架（IPC 通信、WebView2 特性、配置、Dialog API、AppError 前端侧）→ `tauri.mdc`
+9. 仅 ant-design-vue（组件引入、ConfigProvider token、优先用组件替代原生、a-table 分页、骨架屏、CSS-in-JS 特异性）→ `ant-design-vue.mdc`
 
 > 一条知识涉及多层时，放在"最通用且最不易过期"的那一层，其余层用一句话引用。
 
