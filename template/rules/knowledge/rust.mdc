@@ -16,6 +16,9 @@ alwaysApply: false
 
 ## 二、强制规则
 
+### F-rust-2. 所有 `#[command]` 返回 `Result<T, AppError>`
+Tauri 命令统一返回 `Result<T, AppError>`（6 变体：`FileNotFound`/`Io`/`Parse`/`Validation`/`Execution`/`Generic`），用 `#[serde(tag = "type", content = "message")]` 序列化，前端按 `type` 字段差异化处理（前端侧见 `tauri.mdc`）。`validation` 类错误 re-throw 给调用方高亮字段，其余弹 toast。
+
 ### F4. 数据库读取按类型容错
 `rusqlite::Row` 读取字段，除非 100% 确定类型一致，否则**禁止** `row.get_unwrap::<_, T>()`。
 用 `row.get::<_, rusqlite::types::Value>(idx)` + `match Value::Integer / Value::Text`。同一字段在 API / seed.sql / 手动导入中可能以 INTEGER 或 TEXT 存储。
@@ -38,6 +41,12 @@ alwaysApply: false
 
 ### P14. 数据库连接诊断不泄露密码
 前端仅显示 `pass_len=N`（密码长度）；后端连接前做空密码前置校验，错误按关键词分类返回，便于前端精确诊断（前端部分见 Tauri/Vue 层）。
+
+### P-rust-2. 节点处理函数按文件拆分
+工作流类项目把每个节点的后端处理函数拆到独立文件（`executor/nodes/xxx.rs`），在 `mod.rs` 用 `pub use` 暴露，调度器 `scheduler.rs` 的 `execute_single_node` 用 `"xxx" =>` 分支分发。新增节点须前后端都注册（前端见 `svelte.mdc` P-svelte-8）。
+
+### P-rust-3. `evalexpr` 公式占位符 `${value}` 解析
+公式引擎用 `evalexpr` 时，`${value}` 是变量占位符语法（如 `=B1 公式 · 或 ${value}`）。前端模板显示该占位符须用拼接写法（见 `svelte.mdc` P-svelte-3），避免被 Svelte 编译器误解析。
 
 ### P-rust-1. 日志解析误判（后端侧）
 同一逻辑的正常/警告日志被前端日志解析误判为错误（如 SQLite 导入成功却弹"有部分错误"）。刷新/成功判定应由明确业务事件/返回值驱动，**不**依赖日志文本解析；确需解析时按数据源分别处理（前端侧见 `vue.mdc` P-vue-1）。

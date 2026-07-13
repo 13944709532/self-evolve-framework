@@ -1,6 +1,6 @@
 # 知识库（Knowledge Base）
 
-> 经验知识库按**语言 / 框架**分目录组织，源自长期项目（Tauri 2 + Vue 3 + Rust 桌面应用等）的踩坑沉淀。
+> 经验知识库按**语言 / 框架 / 组件库**分目录组织，源自长期项目（Tauri 2 + Vue 3 + Svelte 5 + shadcn-svelte + Rust 桌面应用等）的踩坑沉淀。
 > 由 `self-evolve.mdc` 编排层统一调度，是「post-edit 验证 → 错误记忆 → 规则推荐」飞轮的经验支撑层。
 
 ## 目录结构
@@ -11,6 +11,8 @@ knowledge/
 ├── general.mdc        ← 跨语言通用约束（always 激活）
 ├── typescript.mdc     ← TS/JS 前端语言层（按需加载）
 ├── vue.mdc            ← Vue 框架层（按需加载）
+├── svelte.mdc         ← Svelte 5 框架层（按需加载）
+├── tailwind.mdc       ← Tailwind CSS v4 框架层（按需加载）
 ├── rust.mdc           ← Rust 后端层（按需加载）
 └── tauri.mdc          ← Tauri 框架层（按需加载）
 ```
@@ -36,8 +38,11 @@ knowledge/
 1. 跨语言/跨框架通用（命名总原则、错误友好、文档漂移、DB 通用坑）→ `general.mdc`
 2. 仅 TS/JS 语言层（strict、类型命名、import 安装）→ `typescript.mdc`
 3. 仅 Vue 框架（v-model、响应式、弹窗、组件命名）→ `vue.mdc`
-4. 仅 Rust 语言层（ownership、DB 读取、XLSX、命令注册）→ `rust.mdc`
-5. 仅 Tauri 框架（IPC 通信、WebView2 特性、配置、Dialog API）→ `tauri.mdc`
+4. 仅 Svelte 5 框架（runes、Props、插槽、节点参数同步、画布交互）→ `svelte.mdc`
+5. 仅 Tailwind CSS（v4 语法、魔法值、尺寸 Token、@layer）→ `tailwind.mdc`
+6. 仅 shadcn-svelte（组件引入、API、尺寸/Portal/下拉防误触、重复弹窗抽壳）→ `shadcn-svelte.mdc`
+7. 仅 Rust 语言层（ownership、DB 读取、XLSX、命令注册、AppError）→ `rust.mdc`
+8. 仅 Tauri 框架（IPC 通信、WebView2 特性、配置、Dialog API、AppError 前端侧）→ `tauri.mdc`
 
 > 一条知识涉及多层时，放在"最通用且最不易过期"的那一层，其余层用一句话引用。
 

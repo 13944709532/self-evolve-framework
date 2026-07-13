@@ -48,6 +48,9 @@ npx self-evolve-framework init --skip-impeccable
 │       ├── general.mdc      ← 跨语言通用约束（always）
 │       ├── typescript.mdc   ← TS/JS 前端语言层（按需）
 │       ├── vue.mdc          ← Vue 框架层（按需）
+│       ├── svelte.mdc       ← Svelte 5 框架层（按需）
+│       ├── tailwind.mdc     ← Tailwind CSS v4 框架层（按需）
+│       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
 │       ├── rust.mdc         ← Rust 后端层（按需）
 │       └── tauri.mdc        ← Tauri 框架层（按需）
 ├── skills/
@@ -109,8 +112,11 @@ self-evolve-framework/
 │   │       ├── general.mdc     ← 跨语言通用约束（always）
 │   │       ├── typescript.mdc  ← TS/JS 前端语言层（按需）
 │   │       ├── vue.mdc         ← Vue 框架层（按需）
-│   │       ├── rust.mdc        ← Rust 后端层（按需）
-│   │       └── tauri.mdc       ← Tauri 框架层（按需）
+│   │       ├── svelte.mdc      ← Svelte 5 框架层（按需）
+│   │       ├── tailwind.mdc    ← Tailwind CSS v4 框架层（按需）
+│   │       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
+│   │       ├── rust.mdc         ← Rust 后端层（按需）
+│   │       └── tauri.mdc        ← Tauri 框架层（按需）
 │   └── skills/
 │       ├── skillopt-sleep/
 │       │   └── SKILL.md      ← 离线进化引擎（含设计质量分析）

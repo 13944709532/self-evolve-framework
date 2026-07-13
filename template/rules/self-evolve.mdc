@@ -30,12 +30,15 @@ knowledge/
 ├── general.mdc      ← 跨语言通用约束（always 激活）
 ├── typescript.mdc   ← TS/JS 前端语言层（按需）
 ├── vue.mdc          ← Vue 框架层（按需）
+├── svelte.mdc       ← Svelte 5 框架层（按需）
+├── tailwind.mdc     ← Tailwind CSS v4 框架层（按需）
+├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
 ├── rust.mdc         ← Rust 后端层（按需）
 └── tauri.mdc        ← Tauri 框架层（按需）
 ```
 
 - **改代码前 / 遇 bug 时**：命中某条强制规则（F 系列）或已知多发模式（P 系列）→ 直接按既定方案执行，不重复踩坑。
-  - 例：组件 v-model 禁止双 watch（vue F2）、文件落盘走 Dialog+Rust（tauri F10）、XLSX 用工厂函数（rust F11）、同一字段 AND 筛选=零行（general P1）、SQLite 中文列名需双引号（general P2）。
+  - 例：组件 v-model 禁止双 watch（vue F2）、文件落盘走 Dialog+Rust（tauri F10）、XLSX 用工厂函数（rust F11）、同一字段 AND 筛选=零行（general P1）、SQLite 中文列名需双引号（general P2）、Svelte `$effect` 调 setParam 死循环（svelte P-svelte-2）、Tauri confirm 替代 window.confirm（svelte P-svelte-1）、Tailwind 禁魔法色值（tailwind F-tailwind-3）、shadcn Select 在画布节点内需 `.nodrag` + `onwheel` 防误触（shadcn F-shadcn-4）。
 - **按需加载**：`general.mdc` 常驻；语言/框架专项 `alwaysApply: false`，由 description 语义检索在对应代码上下文自动加载，避免一次性注入全部 context。
 - **命中即记录**：凡触发强制规则或命中多发模式，把「命中 + 处理方式」写入记忆。
 - **≥2 次同模式仍无专门规则** → 在 `.codebuddy/rules/` 下新建 `{pattern}.mdc` 固化，并回流到知识库保持单一真源。

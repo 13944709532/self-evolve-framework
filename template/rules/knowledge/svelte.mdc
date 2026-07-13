@@ -1,0 +1,135 @@
+---
+description: Svelte 5 框架层编码规则与多发问题（runes/$props/插槽/事件修饰符/节点参数同步/弹窗/Store 响应式循环/模板字面量/拖拽）
+alwaysApply: false
+---
+
+# Svelte 5 知识库
+
+> 仅涉及 Svelte 5 框架层的约束与多发问题。后端见 `rust.mdc` / `tauri.mdc`，样式见 `tailwind.mdc`，通用见 `general.mdc`。
+
+## 一、响应式与语法（runes）
+
+- 响应式只用 runes：`$state` / `$derived` / `$effect`，**禁止** `$:` 语法（Svelte 4 废弃）与第三方响应式库（mobx / valtio）
+- 对象 / 数组用 `$state({...})` 即可自动深度响应，无需 `$state.raw`
+- 全局共享状态：在 `*.svelte.ts` 文件中用 `$state` 导出，**禁止**第三方状态管理库
+- 生命周期：挂载一次用 `onMount`；响应式副作用用 `$effect`；清理用 `$effect(() => () => {...})`，**禁止** `beforeUpdate` / `onDestroy`
+
+```svelte
+<script lang="ts">
+  let { id }: { id: string } = $props();           // 禁止 export let
+  let count = $state(0);
+  const double = $derived(count * 2);
+</script>
+```
+
+### F-svelte-1. Props 用 `$props()`，禁止 `export let`
+Svelte 5 标准写法 `let { x = def } = $props<{ x?: T }>()`。`export let` 仅兼容不推荐。
+
+### F-svelte-2. 事件修饰符 `|` 语法禁止
+`onclick|stopPropagation` / `onsubmit|preventDefault` 在 Svelte 5 已废弃，改为显式调用：
+
+```svelte
+<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>...</form>
+<div onclick={(e) => e.stopPropagation()}>...</div>
+```
+
+### F-svelte-3. 插槽用 `{#snippet}` + `{@render}`，禁止 `<slot />`
+```svelte
+<!-- 子组件 -->
+{#snippet children()}
+  {@render children()}
+{/snippet}
+<!-- 父组件 -->
+<Component>
+  {#snippet children()}<p>内容</p>{/snippet}
+</Component>
+```
+
+### F-svelte-4. 组件名大驼峰 + 大小写敏感
+`<Button>...</Button>` 必须配对，混用 `<Button>...</button>` 编译报 `element_invalid_closing_tag`。所有文件用 `<script lang="ts">`，**禁止** `any`，Props / 事件 / 返回值必须强类型。
+
+## 二、节点参数同步（工作流编辑器高发区）
+
+### F-svelte-5. 节点参数同步禁止 `$effect` 调 `setParam`
+`$effect` 内调用 `flowStore.setParam()` 读写同一 `$state` 会触发 `effect_update_depth_exceeded`。正确做法：用 `oninput` / `onchange` / `onclick` 显式调用 + `onMount` 初始化；或优先用 composable：
+
+```ts
+// 扁平参数
+let p = useNodeParams(id, { key1: 'default' });
+oninput={(e) => p.syncParam('key1', e.target.value)};
+
+// 数组参数
+const arr = useArrayParam(id, 'rules', [defaultRule]);
+let rules = $derived(arr.items);   // 必须通过 arr.items / $derived 访问，禁止解构 items
+```
+
+> `flowStore.setParam` 内部已用 `untrack()` 包裹防止被 `$effect` 误追踪。
+
+## 三、多发问题处理模式
+
+### P-svelte-1. 确认弹窗不要 `window.confirm()`
+Tauri v2 WebView 中 `window.confirm()` 被 dialog 插件拦截报 `dialog.confirm not allowed`。统一用 `@tauri-apps/plugin-dialog` 的 `confirm`（异步，函数必须 `async` + `await`）：
+
+```ts
+import { confirm } from '@tauri-apps/plugin-dialog';
+const ok = await confirm('确定删除？', { title: '确认', kind: 'warning' });
+if (!ok) return;
+```
+
+### P-svelte-2. Store 展开写未变仍建新引用 → 响应式死循环
+`{...this.xxx}` 展开写 `$state` 即使值相同也会生成新引用，触发 `effect_update_depth_exceeded`。**赋值前先比较，相同则 `return`**，并用 `untrack()` 包裹：
+
+```ts
+setNodeColumns(nodeId: string, cols: string[]) {
+  untrack(() => {
+    const existing = this.columns[nodeId];
+    if (existing && existing.length === cols.length && existing.every((v, i) => v === cols[i])) return;
+    this.columns = { ...this.columns, [nodeId]: cols };
+  });
+}
+```
+
+### P-svelte-3. 模板 `{'${expr}'}` 被误解析为 JS 模板字面量插值
+Svelte 5 把 `{'${value}'}` 当作模板字面量插值，若 `value` 作用域未定义抛 `ReferenceError`。显示占位符文本（如 Rust `evalexpr` 的 `${value}`）用拼接写法：
+
+```svelte
+<!-- ❌ -->
+<span>{'${value}'}</span>
+<!-- ✅ -->
+<span>{'$'}{value}</span>
+```
+
+### P-svelte-4. 自定义下拉菜单 `wheel` 冒泡触发画布缩放
+下拉选项列表滚动时 `wheel` 事件冒泡到 Svelte Flow 画布触发缩放。所有自定义下拉容器必须 `onwheel stopPropagation`（原生 `<select>` 的 OS 弹窗无需处理）：
+
+```svelte
+<div class="dropdown-menu" onwheel={(e) => e.stopPropagation()}>...</div>
+```
+
+### P-svelte-5. Svelte Flow 节点禁止直接变异 `nodes`/`edges` 数组
+`nodes.push()` / `splice()` / `nodes[i] = x` 违反不可变约定。用不可变替换：`nodes = [...nodes, n]` / `nodes = nodes.map(n => ...)`。节点组件内只渲染 `Handle + UI`，不写业务逻辑、不修改全局状态。
+
+### P-svelte-6. Svelte Flow `Handle` 用 `position:absolute` 绝对定位
+`<Handle>` 内部 `position: absolute`，**不能**用 flex/grid 排列。多 Handle 必须手动算 `top`（`style="top: {CONTENT_OFFSET + i*HANDLE_STEP}px !important"`），且左右 Handle 用同一公式保证对齐。`!important` 范围严格限制 `top` 一个属性。
+
+### P-svelte-7. 前后端参数类型契约必须一一对应
+前端 store 类型（TS）必须与 Rust `#[derive(Deserialize)]` 字段类型对应，否则运行时 deserialize 失败（新增节点最常见错误）：
+
+| Rust | 前端 |
+|------|------|
+| `Vec<String>` | `string[]` |
+| `Vec<Struct>` | `{ field: type }[]` |
+| `Option<String>` | `string \| undefined` |
+| `bool` / `String` | `boolean` / `string` |
+| `serde_json::Value` | `any` |
+
+新增/改字段时前端（flow.ts）与后端（types.rs）**两处同步**，禁止单侧修改。
+
+### P-svelte-8. 新增节点前后端都要注册
+前端：`node-types.ts` + `node-categories.ts`；后端：`nodes/mod.rs`（pub use）+ `scheduler.rs` 的 `execute_single_node` 分支。缺任一注册则节点不可用。Rust 处理函数推荐按文件拆分（`executor/nodes/xxx.rs`）。
+
+### P-svelte-9. 表单 `<label>` 必须关联控件
+否则 Svelte 编译器警告 `A form label must be associated with a control`：用 `<label>名称 <input/></label>` 包裹，或 `<label for="x">` + `<input id="x">`。
+
+## 四、与进化飞轮衔接
+命中上述规则/模式 → 写入记忆；同类 ≥2 次 → 固化规则并回流知识库。
