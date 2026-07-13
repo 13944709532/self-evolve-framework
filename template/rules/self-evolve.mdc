@@ -12,6 +12,7 @@ alwaysApply: true
 ```
 self-evolve.mdc（编排层 — 当前文件）
   ├── ponytail.mdc       → 代码最小化检查（每个操作前）
+  ├── knowledge/         → 经验知识库（按语言/框架分目录，见下）
   ├── CodeGraph MCP       → 依赖图分析（重构/调 bug 时）
   ├── 核心边界审计        → 删/改功能前确认承重墙（本文件内联）
   ├── Impeccable           → 设计质量审计（前端修改后自动触发）
@@ -19,6 +20,25 @@ self-evolve.mdc（编排层 — 当前文件）
        ↓
   post-edit 验证闭环 ← ⭐ 核心
 ```
+
+## 📚 经验知识库（knowledge/ 目录）
+
+> 按**语言 / 框架**分目录组织的经验沉淀。完整索引与归属约定见 `knowledge/README.md`。每次动手前先对照相关知识库自查。
+
+```
+knowledge/
+├── general.mdc      ← 跨语言通用约束（always 激活）
+├── typescript.mdc   ← TS/JS 前端语言层（按需）
+├── vue.mdc          ← Vue 框架层（按需）
+├── rust.mdc         ← Rust 后端层（按需）
+└── tauri.mdc        ← Tauri 框架层（按需）
+```
+
+- **改代码前 / 遇 bug 时**：命中某条强制规则（F 系列）或已知多发模式（P 系列）→ 直接按既定方案执行，不重复踩坑。
+  - 例：组件 v-model 禁止双 watch（vue F2）、文件落盘走 Dialog+Rust（tauri F10）、XLSX 用工厂函数（rust F11）、同一字段 AND 筛选=零行（general P1）、SQLite 中文列名需双引号（general P2）。
+- **按需加载**：`general.mdc` 常驻；语言/框架专项 `alwaysApply: false`，由 description 语义检索在对应代码上下文自动加载，避免一次性注入全部 context。
+- **命中即记录**：凡触发强制规则或命中多发模式，把「命中 + 处理方式」写入记忆。
+- **≥2 次同模式仍无专门规则** → 在 `.codebuddy/rules/` 下新建 `{pattern}.mdc` 固化，并回流到知识库保持单一真源。
 
 ## 🔄 核心工作流：Post-Edit 验证闭环
 

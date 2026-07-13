@@ -1,0 +1,46 @@
+---
+description: Tauri 2 框架层编码规则与多发问题（IPC 通信、TS-Rust 命名桥接、WebView2 落盘、Dialog API、双配置同步、配置字段校验）
+alwaysApply: false
+---
+
+# Tauri 2 知识库
+
+> 仅涉及 Tauri 框架层的约束与多发问题。后端语言层见 `rust.mdc`，前端框架见 `vue.mdc`。
+
+## 一、前后端通信（IPC）
+
+- 前端调用：`invoke("command-name", params)`（`@tauri-apps/api/core`）
+- 后端注册：`#[tauri::command("command-name")]`，函数 `pub`
+- 参数：统一用 `{ key: value }` 对象包裹
+- 必须 `await` + `try/catch`
+- 返回 `Result<T, String>`：成功 `Ok()`，失败 `Err("说明")`
+- 所有文件读写 / 系统操作放 Rust 端
+
+### TS ↔ Rust 命令命名桥接
+前端 command 名与参数 key 用短横线：`invoke("get-user-list", { user_id: 1 })`；
+后端接收函数用蛇形：`#[tauri::command("get-user-list")] fn get_user_list(user_id: i64)`。
+
+## 二、强制规则
+
+### F9. 文件/目录选择走原生 Dialog API
+**禁止** HTML `<input type="file">` / `webkitdirectory`（WebView2 各版本行为不一致，`file.path` 兼容性不稳）。
+用 `@tauri-apps/plugin-dialog` 的 `open({ multiple, filters })` / `open({ directory: true })`。
+
+### F10. 文件落盘走 Tauri Dialog + Rust 写文件
+WebView2 不处理 JS 触发的 `<a download>` 下载，`XLSX.writeFile(wb, name)` 等浏览器下载方法**无法保存**。
+正确：`save()` 原生对话框取路径 → `XLSX.write(wb, { type: 'array' })` 生成 Uint8Array → 通过 Rust 命令（base64 编码后 invoke）写入文件。所有保存操作统一走此链路。
+
+## 三、多发问题处理模式
+
+### P5. Tauri 配置双文件必须同步
+项目有 `tauri.conf.json`（开发）与 `tauri.prod.conf.json`（生产/调试构建）两个配置，`tb`/`tb-fast` 用后者。改 bundle 配置（resources、icon 等）必须同步改两个文件，否则构建出的安装包缺资源。
+
+### P6. 修改 Tauri 配置字段先 cargo check
+`tauri.conf.json` 加了 `tauri-build` crate 不支持的字段，构建报 `unknown field`。改配置前跑 `cargo check` / `npm run cargo:check` 验证字段合法性。
+附带：`languages` 数组用 NSIS `.nlf` 文件名（如 `"SimpChinese"`），**不**用 locale 代码（如 `"zh-CN"`）——schema 通过但 NSIS 运行时因找不到 `.nlf` 报错。
+
+### P-tauri-1. 前端文件保存绕过浏览器机制
+任何"导出/下载"功能都不要依赖 WebView2 的浏览器下载能力（不稳定/无效）。统一：Dialog 选路径 → Rust 写文件（见 F10）。
+
+## 四、与进化飞轮衔接
+命中上述规则/模式 → 写入记忆；同类 ≥2 次 → 固化规则并回流知识库。

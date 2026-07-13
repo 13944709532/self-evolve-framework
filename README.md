@@ -43,7 +43,13 @@ npx self-evolve-framework init --skip-impeccable
 .codebuddy/
 ├── rules/
 │   ├── self-evolve.mdc    ← 编排层（always 激活）
-│   └── ponytail.mdc       ← 代码最小化原则
+│   ├── ponytail.mdc       ← 代码最小化原则
+│   └── knowledge/         ← 经验知识库（按语言/框架分目录）
+│       ├── general.mdc      ← 跨语言通用约束（always）
+│       ├── typescript.mdc   ← TS/JS 前端语言层（按需）
+│       ├── vue.mdc          ← Vue 框架层（按需）
+│       ├── rust.mdc         ← Rust 后端层（按需）
+│       └── tauri.mdc        ← Tauri 框架层（按需）
 ├── skills/
 │   ├── skillopt-sleep/
 │   │   └── SKILL.md       ← 离线进化分析
@@ -96,8 +102,15 @@ self-evolve-framework/
 ├── bin/cli.js            # CLI 安装工具
 ├── template/
 │   ├── rules/
-│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成）
-│   │   └── ponytail.mdc
+│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成 + 知识库调度）
+│   │   ├── ponytail.mdc      ← 代码最小化原则
+│   │   └── knowledge/        ← 经验知识库（按语言/框架分目录，源自 Tauri 等项目沉淀）
+│   │       ├── README.md       ← 索引 + 归属约定 + 编号体系
+│   │       ├── general.mdc     ← 跨语言通用约束（always）
+│   │       ├── typescript.mdc  ← TS/JS 前端语言层（按需）
+│   │       ├── vue.mdc         ← Vue 框架层（按需）
+│   │       ├── rust.mdc        ← Rust 后端层（按需）
+│   │       └── tauri.mdc       ← Tauri 框架层（按需）
 │   └── skills/
 │       ├── skillopt-sleep/
 │       │   └── SKILL.md      ← 离线进化引擎（含设计质量分析）
