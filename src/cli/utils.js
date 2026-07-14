@@ -24,6 +24,42 @@ export function copyRulesFlat(srcDir, destDir, dryRun) {
   return copied
 }
 
+/** 收集目录中所有 .mdc 文件名（扁平，不保持路径） */
+export function collectRuleFiles(dir) {
+  const files = []
+  if (!existsSync(dir)) return files
+
+  function walk(d) {
+    for (const entry of readdirSync(d)) {
+      const full = join(d, entry)
+      if (statSync(full).isDirectory()) {
+        walk(full)
+      } else if (entry.endsWith(".mdc")) {
+        files.push(entry)
+      }
+    }
+  }
+  walk(dir)
+  return files
+}
+
+/** 在源目录中通过扁平文件名找到完整路径 */
+export function findSourceFile(baseDir, flatName) {
+  const found = []
+  function walk(d) {
+    for (const entry of readdirSync(d)) {
+      const full = join(d, entry)
+      if (statSync(full).isDirectory()) {
+        walk(full)
+      } else if (entry === flatName) {
+        found.push(full)
+      }
+    }
+  }
+  walk(baseDir)
+  return found[0] || join(baseDir, flatName)
+}
+
 export function showHelp() {
   console.log(`
   self-evolve — CodeBuddy 自我进化飞轮安装工具

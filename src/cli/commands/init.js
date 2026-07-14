@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, readdirSync
 import { join, resolve, basename } from "path"
 import { fileURLToPath } from "url"
 import { copyRulesFlat } from "../utils.js"
+import { doUpgrade } from "./upgrade.js"
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 const PKG_ROOT = resolve(__dirname, "../../..")
@@ -18,15 +19,24 @@ export async function init(args, isSync = false) {
   console.log(`📍 项目路径: ${baseDir}`)
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
 
+  const rulesExist = existsSync(resolve(baseDir, ".codebuddy/rules"))
   let count = 0
 
-  // 复制 rules（扁平化 knowledge/ 子目录）
-  const rulesSrc = resolve(PKG_ROOT, "rules")
-  const rulesFiles = copyRulesFlat(rulesSrc, resolve(baseDir, ".codebuddy/rules"), dryRun)
-  console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/  →  .codebuddy/rules/（${rulesFiles.length} 个规则）`)
-  count++
+  // 规则安装：已有 → 升级模式，无 → 首次安装
+  if (rulesExist) {
+    console.log("🔄 检测到已有安装，进入升级模式...\n")
+    const { added, skipped } = await doUpgrade(baseDir, dryRun)
+    console.log(`  ${dryRun ? "🔍 将执行" : "✅ 执行"}  升级安装（${added} 个规则）`)
+    if (skipped > 0) console.log(`  ⚠️  ${skipped} 个文件已保留用户修改`)
+    count = added > 0 || skipped > 0 ? 1 : 0
+  } else {
+    const rulesSrc = resolve(PKG_ROOT, "rules")
+    const rulesFiles = copyRulesFlat(rulesSrc, resolve(baseDir, ".codebuddy/rules"), dryRun)
+    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/  →  .codebuddy/rules/（${rulesFiles.length} 个规则）`)
+    count++
+  }
 
-  // 复制 skills（排除 impeccable 如果 --skip-impeccable）
+  // 复制 skills
   const skillsSrc = resolve(PKG_ROOT, "skills")
   if (existsSync(skillsSrc)) {
     const skillDirs = readdirSync(skillsSrc).filter(f =>

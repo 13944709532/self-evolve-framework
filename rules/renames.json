@@ -1,0 +1,15 @@
+{
+  "Svelte_5.mdc": "knowledge/svelte.mdc",
+  "Svelte_Flow.mdc": "knowledge/svelte.mdc",
+  "Tauri.mdc": "knowledge/tauri.mdc",
+  "Tailwind_CSS_v4.mdc": "knowledge/tailwind.mdc",
+  "db-path.mdc": "knowledge/rust.mdc",
+  "rust-type-safety.mdc": "knowledge/rust.mdc",
+  "app-error-pattern.mdc": "knowledge/rust.mdc",
+  "invoke-safe-pattern.mdc": "knowledge/tauri.mdc",
+  "windows-cmd.mdc": null,
+  "powershell.mdc": null,
+  "error-message-exposure.mdc": null,
+  "verify-done.mdc": null,
+  "CodeGraph.mdc": null
+}
