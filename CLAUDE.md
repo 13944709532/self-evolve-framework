@@ -27,7 +27,7 @@
 | `bin/cli.js` | CLI 入口：init（安装）、sync（同步）、list（列表）、help |
 | `template/rules/self-evolve.mdc` | 进化编排 always 规则 |
 | `template/rules/ponytail.mdc` | 代码最小化原则 |
-| `template/rules/knowledge/` | 10 个经验知识库文件（按语言/框架分目录） |
+| `template/rules/knowledge/` | 10 个文件（含 README.md 索引 + 9 个规则文件） |
 | `template/skills/skillopt-sleep/` | 离线进化分析引擎 |
 | `template/skills/impeccable/` | 设计质量审计工具 |
 | `template/skills/sync-docs/` | 项目文档同步技能（自动检测不一致） |
