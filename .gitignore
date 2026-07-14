@@ -4,3 +4,7 @@ npm-debug.log*
 .DS_Store
 *.txt
 __pycache__/
+
+# self-evolve init 生成的目标文件（不入库）
+.codebuddy/rules/
+.codebuddy/skills/
