@@ -21,8 +21,11 @@ const COMMANDS = {
     run: (args) => authCommand(args),
   },
   help: {
-    desc: "显示帮助信息",
-    run: () => showHelp(),
+    desc: "显示帮助信息（help [命令名] 查看子命令帮助）",
+    run: (args) => {
+      const subCmd = process.argv[3]
+      showHelp(subCmd || "")
+    },
   },
 }
 
