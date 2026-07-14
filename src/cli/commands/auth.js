@@ -3,10 +3,10 @@ import { join } from "path"
 import { homedir } from "os"
 
 // GitHub OAuth App client_id（公开客户端，device flow 不需要 client_secret）
-const CLIENT_ID = "Ov23li..."
+const CLIENT_ID = "Ov23li4mWXoEOhYy9SX6"
 
 const TOKEN_PATH = join(homedir(), ".self-evolve-token")
-const GITHUB_DEVICE_URL = "https://github.com/login/device"
+const GITHUB_DEVICE_URL = "https://github.com/login/device/code"
 const GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 
 /** 读取已保存的 token */
@@ -54,18 +54,18 @@ export async function authCommand(args) {
     return
   }
 
-  // Step 2: 展示验证码
-  console.log(`
-┌─────────────────────────────────────────┐
-│                                         │
-│   打开: ${device.verification_uri}
-│                                         │
-│   输入验证码: ${device.user_code}
-│                                         │
-│   ⏱  ${device.expires_in} 秒内有效             │
-│                                         │
-└─────────────────────────────────────────┘
-`)
+  // Step 2: 自动打开浏览器（验证码预填到 URL）
+  const authURL = `${device.verification_uri}?user_code=${device.user_code}`
+  const os = process.platform
+  const openCmd = os === "win32" ? "start" : os === "darwin" ? "open" : "xdg-open"
+  const { execSync } = await import("child_process")
+  try {
+    execSync(`${openCmd} "${authURL}"`, { timeout: 3000, stdio: "ignore" })
+    console.log("🌐 浏览器已自动打开 — 点击 授权 即可")
+  } catch {
+    console.log(`🌐 请打开: ${authURL}`)
+  }
+  console.log("⏳  等待授权...\n")
 
   // Step 3: 轮询 token（按 GitHub 要求的 interval）
   const interval = (device.interval || 5) * 1000
