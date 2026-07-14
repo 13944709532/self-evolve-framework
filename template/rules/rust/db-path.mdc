@@ -1,0 +1,35 @@
+---
+description: DB 连接路径必须使用绝对路径，禁止相对路径。
+alwaysApply: true
+---
+
+# DB 连接路径规范
+
+## 规则
+
+所有 `get_db_connection` 及相关数据库连接调用，必须使用绝对路径。
+
+## 正确做法
+
+```rust
+// 使用项目提供的绝对路径函数
+let db_path = get_sqlite_db_path();
+let conn = get_db_connection(&db_path)?;
+```
+
+## 错误做法
+
+```rust
+// 禁止使用相对路径
+let conn = get_db_connection("tauri_data.db")?;  // ❌
+```
+
+## 原因
+
+Tauri 2 中相对路径指向 WebView2 进程的工作目录，而非用户数据目录。
+`get_db_connection` 在命令行工具中工作正常（CWD 为项目根），但在打包后的 Tauri 应用中找不到数据库文件。
+
+## 涉及函数
+
+- `get_db_connection` — 返回 `Connection`
+- `get_sqlite_db_path` — 返回 `PathBuf` 绝对路径

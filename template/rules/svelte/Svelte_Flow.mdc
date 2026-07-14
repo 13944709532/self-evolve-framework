@@ -1,0 +1,35 @@
+---
+description: Svelte Flow 官方规范 — @xyflow/svelte、不可变状态更新、Handle 规范、nodeTypes 集中注册、容器必须设宽高。
+alwaysApply: true
+---
+
+# Svelte Flow 规范
+
+## 库
+
+使用官方 `@xyflow/svelte` 包（非 `@sveltejs/flow` 或旧版 `svelvet`）。
+
+## 状态更新
+
+- 节点和边的更新必须保持**不可变性**：用 `$state` 每次替换整个数组/对象
+- 禁止直接 `.push()` / `.splice()` 修改已绑定到 Flow 的数组
+
+## Handle 规范
+
+- 每个 Handle 必须有唯一 `id`
+- Handle 定位使用 `position: absolute` + `top` 偏移（非 CSS transform）
+- Handle 类型：`source`（输出）/ `target`（输入）
+
+## 节点注册
+
+```js
+// ✅ 集中注册 nodeTypes
+import { SvelteFlow } from "@xyflow/svelte"
+import CustomNode from "./CustomNode.svelte"
+
+const nodeTypes = { custom: CustomNode }
+```
+
+## 容器
+
+- Flow 容器必须有显式 `width` 和 `height`（CSS 或 inline style），否则渲染区域为 0

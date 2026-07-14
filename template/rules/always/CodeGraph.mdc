@@ -1,0 +1,30 @@
+---
+description: CodeGraph MCP 工具选择指南 — 精确匹配用 search_content，语义搜索用 codebase_search，大范围探索用 code-explorer。
+alwaysApply: true
+---
+
+# CodeGraph MCP 工具选择
+
+## 选择原则
+
+| 工具 | 适用场景 | 示例 |
+|------|---------|------|
+| `search_content` | 精确文本/正则匹配 | 搜索函数名、错误消息、导入路径 |
+| `codebase_search` | 语义搜索（理解意图） | "认证逻辑在哪里实现" |
+| `read_file` | 读取已知文件内容 | 打开某个 .rs/.vue 查看实现 |
+| `task(code-explorer)` | 大范围跨文件探索 | 理解整体项目结构、跨模块依赖 |
+
+## 选择顺序
+
+```
+1. 已知文件名 → read_file（最快）
+2. 精确符号/文本 → search_content（grep 模式）
+3. 语义意图搜索 → codebase_search
+4. 跨文件/大范围 → task(code-explorer)
+```
+
+## 禁止
+
+- 不要对符号搜索使用 `codebase_search`（不精确）
+- 不要对语义问题使用 `search_content`（无法理解意图）
+- 多个独立 read_file 可并行执行

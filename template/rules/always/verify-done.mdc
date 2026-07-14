@@ -1,0 +1,47 @@
+---
+description: 标记完成态前必须核实代码真实存在 — 禁止仅凭记忆或纸面标记 issue/PRD/文档为 ✅。
+alwaysApply: true
+---
+
+# 标记完成前必须核实代码
+
+## 规则
+
+将任何 issue / PRD / 文档条目标记为「已完成 / ✅」之前，**必须**实际核实对应代码真实存在、改动已落盘：
+
+- grep / 全文搜索该符号（函数、composable、组件、命令）是否真实存在
+- ls / 列目录确认相关文件 / 目录已创建
+- read 文件确认改动内容确实写入（警惕"假成功"编辑未落盘）
+
+禁止仅凭记忆、对话印象或"纸面标记"就判定完成。
+
+## 触发场景
+
+- 在 CLAUDE.md / CONTEXT.md / README / PRD / issue 文件中写「✅ 已完成」
+- 关闭或归档一个 issue / 切片
+- 向用户汇报"某功能已交付"
+
+## 错误做法
+
+```text
+// ❌ 仅凭记忆标记完成，未核实
+CLAUDE.md: "- ✅ useDownloadHistory composable（#012）"
+// 实际 src/composables/ 目录不存在、全代码库零引用
+```
+
+## 正确做法
+
+```text
+// ✅ 标记前先核实
+search_content("useDownloadHistory")  → 0 命中
+list_dir("src/composables")           → 目录不存在
+// 结论：未建 → 标 ⬜ 待建，并指向对应 issue
+```
+
+## 原因
+
+文档 / issue 状态与代码事实漂移会误导后续所有决策（如误以为某 composable 可复用、误以为某重构已完成而跳过）。
+
+本项目已发生 ≥2 次谎报完成：
+- 2026-07-11：CLAUDE.md 误标 `#012 useDownloadHistory` / `#021 usePolling` 为 ✅，实际未建。
+- 更早：PRD #6「路由菜单声明式」纸面标记 ✅ 实为未做。

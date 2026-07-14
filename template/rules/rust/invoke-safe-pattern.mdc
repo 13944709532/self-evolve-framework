@@ -1,0 +1,41 @@
+---
+description: Tauri invoke 安全模式 — 强制使用 `invokeSafe` + `INVOKE_ERROR` symbol 判断错误。
+alwaysApply: true
+---
+
+# Tauri invoke 安全模式
+
+## 规则
+
+前端调用 Tauri 命令时，必须使用 `invokeSafe` 包装 + `INVOKE_ERROR` symbol 判断结果：
+
+```js
+import { invokeSafe, INVOKE_ERROR } from "@/utils/invoke-safe"
+
+const result = await invokeSafe("get-user-list", { page: 1 })
+if (result === INVOKE_ERROR) {
+    // 错误已在 invokeSafe 内部处理（日志 + 友好提示）
+    return
+}
+// result 保证是成功值（类型安全）
+```
+
+## 错误做法
+
+```js
+// ❌ 直接 invoke + 空值判断（null/undefined 可能也是合法返回值）
+const result = await invoke("get-user-list")
+if (!result) return   // 空数组 [] 也会被误判为错误
+
+// ❌ 直接 invoke + try/catch（每次都要写重复的日志逻辑）
+try {
+    const data = await invoke("get-user-list")
+} catch (e) {
+    console.error(e)  // 每次都重复
+}
+```
+
+## 原因
+
+`invokeSafe` 统一处理：错误日志、友好提示、INVOKE_ERROR 标记，避免每个调用点重复写错误处理。
+禁止 `!result` 判断，因为空数组/0/空字符串等合法返回值会被误判。

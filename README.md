@@ -39,25 +39,34 @@ npx self-evolve-framework init --skip-impeccable
 
 ## 安装了什么
 
+CLI 自动检测目标项目的技术栈，按需安装规则。
+
+### 始终安装（7 个通用规则）
+
 ```
 .codebuddy/
 ├── rules/
-│   ├── self-evolve.mdc    ← 进化编排（always 激活）
-│   └── ponytail.mdc       ← 代码最小化原则
+│   ├── self-evolve.mdc           ← 进化编排（always 激活）
+│   ├── ponytail.mdc              ← 代码最小化原则
+│   ├── windows-cmd.mdc           ← Windows CMD 命令兼容
+│   ├── powershell.mdc            ← PowerShell UTF-8 编码
+│   ├── error-message-exposure.mdc ← 错误消息友好化
+│   ├── verify-done.mdc           ← 标记完成前核实代码
+│   └── CodeGraph.mdc             ← MCP 工具选择指南
 ├── skills/
-│   ├── skillopt-sleep/    ← 离线进化分析
-│   ├── impeccable/        ← 设计质量审计（含脚本和参考文档）
-│   ├── ponytail/          ← 代码最小化主 skill
-│   ├── ponytail-audit/    ← 代码审计
-│   ├── ponytail-debt/     ← 技术债分析
-│   ├── ponytail-gain/     ← 收益分析
-│   ├── ponytail-help/     ← 帮助文档
-│   └── ponytail-review/   ← 代码审查
-CLAUDE.md                  ← 追加自我进化章节
+│   ├── skillopt-sleep/           ← 离线进化分析
+│   ├── impeccable/               ← 设计质量审计
+│   └── sync-docs/                ← 项目文档自动对齐
+CLAUDE.md                         ← 追加自我进化章节
 ```
 
-> 可选：用 `--skip-impeccable` 跳过 Impeccable skill 安装。
-> 首次使用前在 CodeBuddy 对话中输入 `impeccable init` 创建设计上下文。
+### 按技术栈自动安装
+
+| 检测条件 | 额外安装的规则 |
+|---------|--------------|
+| 有 `Cargo.toml` 或 `src-tauri/` | `db-path.mdc` · `rust-type-safety.mdc` · `app-error-pattern.mdc` · `invoke-safe-pattern.mdc` · `Tauri.mdc` |
+| 有 `svelte` 依赖 | `Svelte_5.mdc` · `Svelte_Flow.mdc` |
+| 有 `tailwindcss` 依赖 | `Tailwind_CSS_v4.mdc` |
 
 ## 使用
 
@@ -80,9 +89,7 @@ skillopt-sleep adopt      → 采纳建议
 impeccable audit           → 设计质量技术审计
 impeccable critique        → 设计评审
 impeccable polish          → 页面润色
-ponytail                   → 代码最小化懒人模式
-ponytail audit             → 代码审计
-ponytail review            → 代码审查
+sync-docs                  → 项目文档对齐
 ```
 
 ### 设计上下文
@@ -100,19 +107,19 @@ ponytail review            → 代码审查
 ```
 self-evolve-framework/
 ├── package.json          # npm 包配置
-├── bin/cli.js            # CLI 安装工具
+├── bin/cli.js            # CLI 安装工具（含技术栈检测）
 ├── template/
 │   ├── rules/
-│   │   ├── self-evolve.mdc   ← 进化编排
-│   │   └── ponytail.mdc      ← 代码最小化原则
+│   │   ├── always/              ← 通用规则（7 个）
+│   │   ├── rust/                ← Rust/Tauri 规则（5 个）
+│   │   ├── svelte/              ← Svelte 规则（2 个）
+│   │   └── tailwind/            ← Tailwind 规则（1 个）
 │   └── skills/
-│       ├── skillopt-sleep/   ← 离线进化引擎
-│       ├── impeccable/       ← 设计质量审计（含脚本）
-│       ├── ponytail/         ← 代码最小化主 skill
-│       ├── ponytail-audit/   ← 代码审计
-│       ├── ponytail-debt/    ← 技术债分析
-│       ├── ponytail-gain/    ← 收益分析
-│       ├── ponytail-help/    ← 帮助
-│       └── ponytail-review/  ← 代码审查
+│       ├── skillopt-sleep/      ← 离线进化引擎
+│       ├── impeccable/          ← 设计质量审计（含脚本）
+│       └── sync-docs/           ← 文档自动对齐
+├── AGENTS.md             # AI 代理指南
+├── CLAUDE.md             # AI 项目约束
+├── LICENSE
 └── README.md
 ```
