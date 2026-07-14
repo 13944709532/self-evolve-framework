@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, readdirSync, statSync } from "fs"
 import { join, resolve, basename } from "path"
+import { execSync } from "child_process"
 
 /** 递归复制目录中的 .mdc 文件到目标（扁平复制，不保持子目录结构） */
 export function copyRulesFlat(srcDir, destDir, dryRun) {
@@ -41,6 +42,24 @@ export function collectRuleFiles(dir) {
   }
   walk(dir)
   return files
+}
+
+/** 检测 Python 是否可用，返回版本号或空字符串 */
+export function detectPython() {
+  try {
+    const out = execSync("python --version 2>&1 || python3 --version 2>&1 || py --version 2>&1", {
+      timeout: 3000, stdio: ["ignore", "pipe", "pipe"],
+    }).toString()
+    const m = out.match(/Python (\d+\.\d+)/)
+    if (m) {
+      const ver = parseFloat(m[1])
+      if (ver >= 3.10) return `Python ${m[1]}`
+      return `Python ${m[1]}（需 3.10+）`
+    }
+    return ""
+  } catch {
+    return ""
+  }
 }
 
 /** 在源目录中通过扁平文件名找到完整路径 */

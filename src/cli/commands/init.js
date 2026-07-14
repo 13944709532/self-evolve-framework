@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, readdirSync, statSync } from "fs"
 import { join, resolve, basename } from "path"
 import { fileURLToPath } from "url"
-import { copyRulesFlat } from "../utils.js"
+import { copyRulesFlat, detectPython } from "../utils.js"
 import { doUpgrade } from "./upgrade.js"
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
@@ -17,6 +17,14 @@ export async function init(args, isSync = false) {
     console.log(`从 ${PKG_ROOT} 同步配置到 ${baseDir}`)
   }
   console.log(`📍 项目路径: ${baseDir}`)
+
+  // Python 环境检测
+  const pythonVer = detectPython()
+  if (pythonVer && !pythonVer.includes("需")) {
+    console.log(`🐍 Python: ${pythonVer}`)
+  } else {
+    console.log(`🐍 Python: ❌  ${pythonVer || "未安装"} → skillopt-sleep 以模拟模式运行（仅报告，不做训练）`)
+  }
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
 
   const rulesExist = existsSync(resolve(baseDir, ".codebuddy/rules"))
