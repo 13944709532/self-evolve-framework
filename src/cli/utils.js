@@ -66,6 +66,7 @@ export function showHelp() {
 
   用法:
     self-evolve            一键安装/升级全部 skill + 规则（默认）
+    self-evolve auth       一键 GitHub 认证（自动获取 Issues 写入权限）
     self-evolve sync       从框架同步最新版本
     self-evolve list       列出包含的 skill 和规则
     self-evolve help       显示帮助信息
@@ -81,9 +82,9 @@ export function showHelp() {
     self-evolve --project ./my-app
     self-evolve --skip-claude-md --dry-run
 
-  GitHub 令牌（可选，用于自动提交用户贡献 issue）:
-    1. GitHub Settings → Developer settings → Fine-grained tokens
-    2. 权限: Issues Read & Write，仓库: 13944709532/self-evolve-framework
-    3. set GITHUB_TOKEN=github_pat_xxxx
+  GitHub 认证（可选，用于自动提交用户贡献 issue）:
+    self-evolve auth       自动打开浏览器 → 输入验证码 → token 自动保存
+    或手动: GitHub Settings → Developer settings → Fine-grained tokens
+           Issues Read & Write → set GITHUB_TOKEN=github_pat_xxxx
   `)
 }

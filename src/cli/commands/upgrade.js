@@ -2,6 +2,7 @@ import { readFileSync, existsSync, unlinkSync } from "fs"
 import { join, resolve } from "path"
 import { fileURLToPath } from "url"
 import { collectRuleFiles, copyRulesFlat, findSourceFile } from "../utils.js"
+import { getToken } from "./auth.js"
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 const PKG_ROOT = resolve(__dirname, "../../..")
@@ -47,7 +48,7 @@ function _diff(oldContent, newContent) {
 
 /** 向 GitHub 创建 contribution issue */
 async function _createIssue(title, body) {
-  const token = process.env["SELF_EVOLVE_TOKEN"] || process.env["GITHUB_TOKEN"]
+  const token = getToken()
   if (!token) return false
 
   const label = "user-contribution"
@@ -198,9 +199,8 @@ export async function doUpgrade(targetDir, dryRun = false) {
   if (contributed > 0) console.log(`   📤 已提交 GitHub issue: ${contributed} 个`)
   if (contributions.length > contributed) {
     console.log(`   ⚠️  ${contributions.length - contributed} 个贡献未提交`)
-    console.log(`   💡 设置 token 即可自动提 issue：`)
-    console.log(`      set GITHUB_TOKEN=github_pat_xxxx && self-evolve`)
-    console.log(`      → 令牌在 GitHub Settings → Developer settings → Personal access token 创建`)
+    console.log(`   💡 一键认证: self-evolve auth`)
+    console.log(`      或手动设置: set GITHUB_TOKEN=github_pat_xxxx`)
   }
 
   return { added: added.length, skipped, contributed }

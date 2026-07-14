@@ -1,5 +1,6 @@
 import { init } from "./commands/init.js"
 import { listSkills } from "./commands/list.js"
+import { authCommand } from "./commands/auth.js"
 import { showHelp } from "./utils.js"
 
 const COMMANDS = {
@@ -14,6 +15,10 @@ const COMMANDS = {
   list: {
     desc: "列出包含的 skill 和规则",
     run: () => listSkills(),
+  },
+  auth: {
+    desc: "GitHub 设备认证（自动获取 Issues 权限 token）",
+    run: (args) => authCommand(args),
   },
   help: {
     desc: "显示帮助信息",
