@@ -75,6 +75,12 @@ export function showHelp(cmd) {
   手动方式:
     set GITHUB_TOKEN=github_pat_xxxx && self-evolve
     令牌创建: GitHub Settings → Fine-grained tokens → Issues R&W
+
+  🔒 安全说明:
+    • Token 仅申请 public_repo 权限（创建 issue 的最小权限）
+    • Token 保存在 ~/.self-evolve-token，文件权限 600（仅你本人可读）
+    • 不会发送到任何第三方服务器
+    • 可随时在 GitHub Settings → Applications 中撤销
   `)} else if (cmd === "list") {
     console.log(`
   self-evolve list — 列出包内所有规则和技能
@@ -121,5 +127,12 @@ export function showHelp(cmd) {
     self-evolve                              # 默认安装
     self-evolve --project ./my-app --dry-run # 预览
     self-evolve auth && self-evolve          # 认证后安装
+
+  ⚠️  注意事项:
+    • 首次安装在 .codebuddy/ 下创建 rules/ + skills/ 目录
+    • 升级时同名文件内容相同则覆盖，内容不同则保留你的版本
+    • 旧版规则文件（如 Svelte_5.mdc）会被自动清理
+    • 用户自增的 .mdc 文件会被删除（内容自动提 issue 备份）
+    • Token 非必须 — 无 token 时仅跳过 issue 提交，其余功能正常
   `)}
 }
