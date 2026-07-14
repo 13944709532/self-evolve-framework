@@ -37,6 +37,41 @@ npx self-evolve-framework init --skip-claude-md
 npx self-evolve-framework init --skip-impeccable
 ```
 
+## GitHub 令牌（可选）
+
+修改了规则但不想丢失？设置令牌后，CLI 自动将你的修改提交为 GitHub issue。
+
+### 1. 创建令牌
+
+GitHub → 右上角头像 → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
+
+| 字段 | 值 |
+|------|---|
+| Token name | `self-evolve` |
+| Expiration | 自定义（建议 90 天） |
+| Repository access | **Only select repositories** → `13944709532/self-evolve-framework` |
+| Permissions | **Issues**: Read & Write |
+
+点 Generate token，复制生成的 `github_pat_xxx...`
+
+### 2. 设置环境变量
+
+```bash
+# CMD
+set GITHUB_TOKEN=github_pat_XXXX
+
+# PowerShell
+$env:GITHUB_TOKEN="github_pat_XXXX"
+```
+
+然后正常使用——检测到修改会自动提 issue：
+
+```bash
+self-evolve           # 有 token → 自动提 issue，无 token → 只报告
+```
+
+> CLI 优先读 `GITHUB_TOKEN`（GitHub CLI 用户的常用变量），其次读 `SELF_EVOLVE_TOKEN`。
+
 ## 安装了什么
 
 ```

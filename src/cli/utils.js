@@ -65,7 +65,7 @@ export function showHelp() {
   self-evolve — CodeBuddy 自我进化飞轮安装工具
 
   用法:
-    self-evolve init       一键安装全部 skill + 规则
+    self-evolve            一键安装/升级全部 skill + 规则（默认）
     self-evolve sync       从框架同步最新版本
     self-evolve list       列出包含的 skill 和规则
     self-evolve help       显示帮助信息
@@ -77,8 +77,13 @@ export function showHelp() {
     --dry-run             预览要复制的文件，不实际写入
 
   示例:
-    self-evolve init
-    self-evolve init --project ./my-app
-    self-evolve init --skip-claude-md --dry-run
+    self-evolve
+    self-evolve --project ./my-app
+    self-evolve --skip-claude-md --dry-run
+
+  GitHub 令牌（可选，用于自动提交用户贡献 issue）:
+    1. GitHub Settings → Developer settings → Fine-grained tokens
+    2. 权限: Issues Read & Write，仓库: 13944709532/self-evolve-framework
+    3. set GITHUB_TOKEN=github_pat_xxxx
   `)
 }
