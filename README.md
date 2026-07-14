@@ -18,23 +18,32 @@
 
 ```bash
 # npx（推荐，零安装）
-npx self-evolve-framework init
+npx self-evolve-framework
 ```
 
 ### 选项
 
 ```bash
 # 指定项目路径
-npx self-evolve-framework init --project ./my-app
+npx self-evolve-framework --project ./my-app
 
 # 预览模式（不写入任何文件）
-npx self-evolve-framework init --dry-run
+npx self-evolve-framework --dry-run
 
 # 跳过 CLAUDE.md 更新
-npx self-evolve-framework init --skip-claude-md
+npx self-evolve-framework --skip-claude-md
 
 # 跳过 Impeccable 设计质量工具安装
-npx self-evolve-framework init --skip-impeccable
+npx self-evolve-framework --skip-impeccable
+```
+
+### CLI 命令
+
+```bash
+self-evolve              # 默认安装/升级
+self-evolve auth         # 一键 GitHub 认证
+self-evolve list         # 列出规则和技能
+self-evolve help [cmd]   # 帮助
 ```
 
 ## GitHub 令牌（可选）

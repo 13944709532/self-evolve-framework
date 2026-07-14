@@ -4,32 +4,32 @@
 
 ## 项目概述
 
-Self-Evolve Framework 是一个 **CodeBuddy IDE 自我进化飞轮工具包**，以 npm 包形式分发。通过 `npx self-evolve-framework init` 将 skill + 规则一键安装到目标项目中，形成 post-edit 验证 → 错误记忆 → 规则推荐的闭环。
+Self-Evolve Framework 是一个 **CodeBuddy IDE 自我进化飞轮工具包**，以 npm 包形式分发。通过 `npx self-evolve-framework` 将 skill + 规则一键安装到目标项目中，形成 post-edit 验证 → 错误记忆 → 规则推荐的闭环。
 
 ## 仓库结构
 
 ```
 self-evolve-framework/
-├── bin/cli.js            # CLI 入口（init / sync / list / help）
-├── template/             # 模板文件（安装时复制到目标项目）
-│   ├── rules/            # .mdc 规则文件 → 目标 .codebuddy/rules/
-│   └── skills/           # skill 目录 → 目标 .codebuddy/skills/
-├── package.json          # v1.6.0
-├── CLAUDE.md             # AI 项目约束
-├── AGENTS.md             # 本文件
-└── README.md             # 用户文档（npm 页面）
+├── bin/self-evolve.js    # CLI 入口壳 → src/cli/
+├── src/cli/              # 命令中枢（init/upgrade/auth/list）
+├── rules/                # 规则（直接消费，安装→ .codebuddy/rules/）
+├── skills/               # 技能（直接消费，安装→ .codebuddy/skills/）
+├── docs/                 # 架构文档 + 变更日志
+├── package.json          # v1.6.1
+├── CLAUDE.md / AGENTS.md / LICENSE
+└── README.md
 ```
 
 ## 构建与发布
 
 ```bash
-# 无构建步骤（纯静态模板 + 脚本）
+# 无构建步骤（纯 Node.js + Python 引擎）
 # 发布到 npm
 npm publish
 
 # 本地测试
-node bin/cli.js init --dry-run
-node bin/cli.js list
+node bin/self-evolve.js --dry-run
+node bin/self-evolve.js list
 ```
 
 ## 模板内容
@@ -68,10 +68,10 @@ node bin/cli.js list
 
 ## 关键约束
 
-1. **模板内容变更必须在 README 中同步更新**："安装了什么" 和 "文件结构" 两个章节
-2. **CLI 选项变更必须在 README "选项" 章节和 `showHelp()` 函数中同步**
-3. **不在此仓库中运行 npm run check / cargo check** — 这是模板包，无源码编译
-4. **.gitignore 保持简洁**：仅 node_modules/、*.tgz、*.txt、日志文件、.DS_Store
+1. **规则/技能变更必须在 README 中同步更新**："安装了什么" 和 "文件结构" 两个章节
+2. **CLI 选项/命令变更 = 三处同步**：`showHelp()`、README、AGENTS
+3. **不在此仓库中运行 npm run build / cargo check** — 这是 Skill 包，零依赖无编译
+4. **规则新增放入 `rules/knowledge/`** — 按语言/框架分文件
 5. **版本号唯一来源**：`package.json` 的 `version` 字段
 
 ## 自定义指令
@@ -80,6 +80,8 @@ node bin/cli.js list
 
 | 关键词 | 操作 |
 |--------|------|
-| `同步项目文档` / `sync-docs` / `对齐文档` | 调用 `sync-docs` 技能，同步 README / AGENTS / CLAUDE 与模板实际内容 |
+| `同步项目文档` / `sync-docs` / `对齐文档` | 调用 `sync-docs` 技能，同步 README / AGENTS / CLAUDE 与实际代码 |
 | `发布` / `publish` | 确认后执行 `npm publish` |
-| `查看模板` / `list` | 等价于 `npx self-evolve-framework list` |
+| `查看模板` / `list` | 等价于 `self-evolve list` |
+| `升级` / `update` | 等价于 `self-evolve`（默认安装/升级） |
+| `认证` / `auth` | 等价于 `self-evolve auth` |
