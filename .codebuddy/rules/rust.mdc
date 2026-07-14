@@ -1,0 +1,55 @@
+---
+description: Rust 后端编码规则与多发问题（命名、数据库类型容错、XLSX 工厂、MutexGuard、invoke_handler 单宏、全局状态、连接诊断）
+alwaysApply: false
+---
+
+# Rust 知识库
+
+> 仅涉及 Rust 语言/后端的约束与多发问题。框架层（IPC/WebView2/配置）见 `tauri.mdc`，通用见 `general.mdc`。
+
+## 一、命名约定
+
+- 函数 / 变量 / 方法：蛇形 `snake_case`
+- 结构体 / 枚举 / Trait / 类型：大驼峰 `PascalCase`
+- 常量 / 静态变量：大蛇形 `UPPER_SNAKE_CASE`
+- 文件 / 文件夹：小写蛇形 `snake_case`
+
+## 二、强制规则
+
+### F-rust-2. 所有 `#[command]` 返回 `Result<T, AppError>`
+Tauri 命令统一返回 `Result<T, AppError>`（6 变体：`FileNotFound`/`Io`/`Parse`/`Validation`/`Execution`/`Generic`），用 `#[serde(tag = "type", content = "message")]` 序列化，前端按 `type` 字段差异化处理（前端侧见 `tauri.mdc`）。`validation` 类错误 re-throw 给调用方高亮字段，其余弹 toast。
+
+### F4. 数据库读取按类型容错
+`rusqlite::Row` 读取字段，除非 100% 确定类型一致，否则**禁止** `row.get_unwrap::<_, T>()`。
+用 `row.get::<_, rusqlite::types::Value>(idx)` + `match Value::Integer / Value::Text`。同一字段在 API / seed.sql / 手动导入中可能以 INTEGER 或 TEXT 存储。
+
+### F11. XLSX 样式用工厂函数
+新增 xlsx 导出模块优先用 `cell_format()` / `header_format()` 工厂函数，禁止自造 `Format::new()` 重复样式；需微调时在工厂返回的 Format 上链式 `set_*()`。
+列宽用统一 `display_width()`（中文字符算 2 宽度）；数值检测用 `value.parse::<f64>()`，禁止自造 `is_numeric_string()`。
+写入日期单元格时继承 `data_fmt.clone().set_num_format("yyyy/mm/dd")`，避免 `Format::new()` 丢失 `data_fmt` 样式导致日期格式丢失。
+
+## 三、多发问题处理模式
+
+### P4. async 中 MutexGuard 必须在 .await 前 drop
+`std::sync::Mutex` 在 async 函数里加锁后跨 `.await`，Future 不满足 `Send` trait 编译失败。用 `{ /* 加锁区 */ }` 块包围加锁逻辑，确保 MutexGuard 在 `.await` 前被 drop。
+
+### P8. Tauri invoke_handler 单宏约束
+多次调用 `.invoke_handler()` 只有最后一次生效（后续覆盖前次）。所有 `#[tauri::command]` 必须在唯一一个 `generate_handler![]` 宏中注册；函数实现留在各自模块，lib.rs 只做注册中转。
+
+### P13. 全局状态访问用统一入口
+散落多处直接持有全局指针 / 各自读配置 → 迁移困难、易不一致。全局状态通过统一 `get()` 入口（如 `app_state::get()`）访问；配置读写、DB 路径、桌面路径等提取为单一工具函数，禁止重复实现。
+
+### P14. 数据库连接诊断不泄露密码
+前端仅显示 `pass_len=N`（密码长度）；后端连接前做空密码前置校验，错误按关键词分类返回，便于前端精确诊断（前端部分见 Tauri/Vue 层）。
+
+### P-rust-2. 节点处理函数按文件拆分
+工作流类项目把每个节点的后端处理函数拆到独立文件（`executor/nodes/xxx.rs`），在 `mod.rs` 用 `pub use` 暴露，调度器 `scheduler.rs` 的 `execute_single_node` 用 `"xxx" =>` 分支分发。新增节点须前后端都注册（前端见 `svelte.mdc` P-svelte-8）。
+
+### P-rust-3. `evalexpr` 公式占位符 `${value}` 解析
+公式引擎用 `evalexpr` 时，`${value}` 是变量占位符语法（如 `=B1 公式 · 或 ${value}`）。前端模板显示该占位符须用拼接写法（见 `svelte.mdc` P-svelte-3），避免被 Svelte 编译器误解析。
+
+### P-rust-1. 日志解析误判（后端侧）
+同一逻辑的正常/警告日志被前端日志解析误判为错误（如 SQLite 导入成功却弹"有部分错误"）。刷新/成功判定应由明确业务事件/返回值驱动，**不**依赖日志文本解析；确需解析时按数据源分别处理（前端侧见 `vue.mdc` P-vue-1）。
+
+## 四、与进化飞轮衔接
+命中上述规则/模式 → 写入记忆；同类 ≥2 次 → 固化规则并回流知识库。

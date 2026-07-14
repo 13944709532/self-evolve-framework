@@ -1,0 +1,64 @@
+# shadcn-svelte 组件库层（按需加载）
+
+> 仅当项目使用 **shadcn-svelte**（Svelte 5 + Tailwind v4 的 UI 组件库）时激活。
+> 组件以**源码形式**生成到 `src/lib/components/ui/`，可完全自定义样式；与 `svelte.mdc`（语言/框架层）、`tailwind.mdc`（样式层）协同，不与二者重叠。
+
+## 一、引入与机制
+
+- 添加组件：`npx shadcn-svelte@latest add button input select dialog sonner ...`（源码生成到 `src/lib/components/ui/<comp>/`）
+- 提供 `cn()` 工具（clsx + tailwind-merge）合并 className；组件统一用 `class` 而非 `className`
+- 每个组件可能带来额外底层依赖（`@melt-ui/svelte` / `@zag-js`），引入前评估包体积
+- 引入后清理未使用的旧 UI 库死依赖（如已用 shadcn 则 `npm uninstall bits-ui`），避免样式冲突
+- 通过 barrel export（`$lib/components/ui/index.js`）统一导入：`import { Button, Input, Select } from '$lib/components/ui'`
+
+## 二、通用组件 API 约定
+
+| 组件 | 关键 API | 说明 |
+|------|---------|------|
+| `<Button>` | `variant="default\|outline\|destructive\|ghost\|link"`，`size="default\|sm\|lg\|icon"` | 圆角 `rounded-md`、中文场景用 `size="sm"` |
+| `<Input>` | `class` 控制尺寸 | 统一文本框外观，禁用原生 `<input>` 手写样式 |
+| `<Select>` | `<SelectItem>` 动态生成选项；`value` / `onValueChange` | **自定义渲染，非原生 `<select>`**，无 `appearance-none` 箭头 |
+| `<Sonner>` | 全局 `<Toaster>`，配合 `toastStore.success/error/warning/info` | 替换自制 Toast |
+| 弹窗外壳 | 封装 `ModalShell` 模式：遮罩 + 容器 + ✕ + Escape + Portal | 集成 Svelte Flow `use:portal`，消除每处重复 |
+
+## 三、强制规则
+
+### F-shadcn-1. 通用 UI 控件优先用 shadcn 组件
+新增输入/下拉/按钮/弹窗，**优先**用 `<Input>`/`<Select>`/`<Button>`/统一弹窗外壳。禁止大段手写 Tailwind 类模拟同款控件、禁止每个节点重复粘贴相同原子类组合（可读性差且易漂移）。仅在精确 flex 尺寸 / 绝对定位 / 节点联锁布局等特有场景才保留本地 `<style>`。
+
+### F-shadcn-2. 节点 / 紧凑 UI 统一尺寸与宽度
+shadcn 默认 `h-10`，节点内紧凑 UI 统一 `size="sm"`（`h-8`）+ `text-xs`；**禁止同一组内混用不同高度控件**。节点内输入控件统一固定宽度（`w-14`≈56px / `w-20` / `w-28`），**禁止 `width:100%`、禁止自定义 `flex:0 0 Npx`**（易撑宽画布/容器导致节点 max-width 变形）。
+
+### F-shadcn-3. 弹窗必须 Portal + 统一外壳
+画布 / Svelte Flow 节点内的弹窗必须 `portal`（兼容 transform 定位）；**所有弹窗统一用封装外壳**，禁止手写遮罩层 + 容器 + 关闭按钮 + Escape 逻辑。超出默认 `max-w-lg` 的宽度用 `contentClass` / `width` prop 配置（小配置 `w-[400px]`、标准 `w-[600px]`、数据预览 `w-[80vw]`）。
+
+### F-shadcn-4. 下拉 / Select 在画布节点内防误触
+- `<Select>` 是组合组件，**不自动继承**画布的 `noDragClassName`，必须置于 `.nodrag` 容器内防拖拽误触发
+- 自定义下拉菜单容器必须 `onwheel={(e) => e.stopPropagation()}`，防止滚动选项冒泡到画布触发缩放（原生 `<select>` 的 option 是 OS 弹窗，无需处理）
+- 详见 `svelte.mdc` P-svelte-4（画布交互）
+
+### F-shadcn-5. 避免为单一交互引入额外组件依赖
+仅需简单开关（如 AND/OR 切换）时，用 Tailwind 自写 Segmented/Switch 控件，**不引入** shadcn `switch` 等额外依赖，控制包体积。
+
+## 四、多发模式
+
+### P-shadcn-1. 引入 shadcn 后清理死依赖
+原项目若已有未使用 UI 库（bits-ui 等），`npx shadcn-svelte init` 后 `npm uninstall` 移除；且需确认 shadcn 的 CSS 变量主题与项目现有 `@theme`（`--color-background` 等）不冲突。
+
+### P-shadcn-2. 默认值差异导致视觉不一致
+shadcn 默认 `h-10`、圆角、字号与项目紧凑设计不符 → 全局用 `size="sm"` 或覆写组件默认值；替换后**逐页验证**按钮/输入框高度、弹窗宽度一致，重点核对工具栏与节点内添加/删除按钮。
+
+### P-shadcn-3. 重复弹窗逻辑必须抽公共外壳
+多个弹窗各自维护遮罩/关闭/Escape/Portal（8 处合计 ~200 行重复 CSS）→ 抽 `ModalShell` 后每处模板从 ~14 行降到 0 行、消除全部重复。**新增弹窗一律走外壳**，不回头手写。
+
+### P-shadcn-4. 控件响应式解构陷阱（与 svelte 联动）
+数组参数用 `useArrayParam` 时，`let { items } = useArrayParam()` 解构会断开 `$state` 响应式 → 改用 `let arr = useArrayParam(); let items = $derived(arr.items)`。详见 `svelte.mdc` F-svelte-5。
+
+### P-shadcn-5. 条件组 / 列表控件统一风格
+多行规则（筛选、排序、清洗等）使用统一：容器（`bg-*-50` + `border` + `rounded-lg`）、序号（大写字母 A/B/C）、添加按钮（虚线橙边 `outline` + `size="sm"` + `border-dashed`）、删除按钮（`secondary` + `size="icon"` + `text-rose-500`）。避免每节点各自维护一套不一致的高度/字号/颜色。
+
+### P-shadcn-6. Toast 迁移适配现有 store 接口
+替换为 `<Sonner>` 时需适配项目既有 `toastStore.success/error/warning/info` 调用接口，保留方法签名、仅替换底层渲染，避免改动所有调用点。
+
+### P-shadcn-7. 不要为高风险的统一外壳做全量替换
+节点外壳（NodeShell）等高耦合关键交互组件**不要**为套用 shadcn `Card` 而全量替换（阴影/Handle 定位/圆角兼容性风险高），保持原结构、内部控件仍可用 shadcn。

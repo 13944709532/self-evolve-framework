@@ -39,3 +39,10 @@
 2. 对比 CLI `showHelp()` 输出 vs README.md 选项章节
 3. 检查 AGENTS.md ↔ CLAUDE.md 约束一致性
 4. 检查 package.json version ↔ 文档中版本引用
+
+## 自我进化（always 激活）
+
+统一由 `.codebuddy/rules/self-evolve.mdc` 编排。
+调度 Ponytail（代码最小化）+ CodeGraph（依赖分析）+ Skillopt-Sleep（离线进化）+ Impeccable（设计质量）
+→ 形成 **post-edit 验证 → 错误记忆 → 规则推荐** 闭环。
+

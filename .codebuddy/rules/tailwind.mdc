@@ -1,0 +1,66 @@
+---
+description: Tailwind CSS v4 框架层编码规则与多发问题（@import/@theme/@source、禁止魔法色值与魔法数字、桌面尺寸 Token、@layer 分层）
+alwaysApply: false
+---
+
+# Tailwind CSS v4 知识库
+
+> 仅涉及 Tailwind v4 样式框架的约束与多发问题。前端框架层见 `vue.mdc` / `svelte.mdc`，桌面尺寸标准见 `general.mdc` 与 Svelte/Vue 分库。
+
+## 一、v4 语法迁移（与 v3 不兼容）
+
+| 功能 | v3（废弃） | v4（当前） |
+|------|----------|----------|
+| 引入方式 | `@tailwind base/components/utilities` | `@import "tailwindcss"` |
+| 配置文件 | `tailwind.config.js` | `@theme {}` in CSS |
+| 内容扫描 | `content: []` | `@source` in CSS |
+| 主题扩展 | `theme.extend` in JS | `@theme { --color-*: ... }` |
+| 插件注册 | `plugins: []` | `@plugin` in CSS |
+
+### F-tailwind-1. 引入与主题用 v4 语法
+`@import "tailwindcss"`，禁止 `@tailwind` 旧指令；主题扩展写在 `@theme {}` 块内（CSS 中），不再用 `tailwind.config.js`（仅需要插件时才建）。
+
+### F-tailwind-2. 内容扫描用 `@source`
+在 CSS 中用 `@source "../src/**/*.{svelte,vue,ts}"` 声明扫描路径，禁止 v3 的 `content: []` 数组。
+
+## 二、强制规则
+
+### F-tailwind-3. 禁止魔法十六进制色值
+优先用官方语义色阶（`gray-50`-`gray-900`、`blue-500` 等），主题色统一在 `@theme` 的 `--color-*` 扩展；透明度用 `bg-blue-500/50` 语法。魔法色值（`#334155` 等）仅限组件特有 `<style scoped>` 中少量使用。
+
+### F-tailwind-4. 间距 / 尺寸 / 圆角只用官方刻度
+宽高、内外边距、间距只用预设刻度（`0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 16...`），禁止 `p-7` / `m-13` 等非标值；必须自定义时在 `@theme` 的 `--spacing-*` 扩展。
+
+### F-tailwind-5. `@apply` 必须放在 `@layer` 内
+复用样式用 `@apply` 指令，且必须在 `@layer components` / `@layer utilities` 内；禁止不写 `@layer` 直接全局覆写。
+
+### F-tailwind-6. 状态变体 / 响应式只用官方
+状态变体只用 `hover:` / `focus:` / `active:` / `disabled:` / `first:` / `last:` / `dark:`；响应式移动端优先（先默认样式，再逐层 `sm:` / `md:` / `lg:`）。暗黑模式用 `class` 策略（根元素加 `dark` 类）。
+
+## 三、多发问题处理模式
+
+### P-tailwind-1. 桌面 UI 尺寸对齐 Ant Design Token 标准
+项目中控件尺寸已对齐 Ant Design 设计 Token，新增 UI 时复用而非自造：
+
+| 元素 | 尺寸 / Token | 对应 |
+|------|-------------|------|
+| 弹窗圆角 | `rounded-xl` = 12px | — |
+| 基础控件圆角 | `rounded-lg` = 6px | borderRadius = 6 |
+| 小元素圆角 | `rounded-md` = 4px | borderRadiusSM = 4 |
+| 正文 | `text-base` = 14px | fontSize |
+| 小标题 | `text-lg` = 16px / 600 | fontSizeHeading5 |
+| 辅助文字 | `text-sm` = 12px | fontSizeSM |
+| 常规按钮 | `h-10 px-5` | — |
+| 小按钮 | `h-8 px-3` | — |
+| 输入框高度 | 统一 `h-10` | — |
+| 顶部栏高度 | `h-14` / `h-16` | — |
+| 侧边栏宽度 | `w-56` / `w-64` | — |
+
+### P-tailwind-2. 节点 / 组件内禁止散落大量相同 Tailwind 类
+重复的类组合优先封装成通用组件（如 shadcn-svelte 的 `<Button>` / `<Input>` / `<Select>`）或 UI 组件，避免在每个节点组件里重复大量原子类。
+
+### P-tailwind-3. 自定义下拉 / 弹窗样式必须考虑画布交互
+若下拉菜单位于 Svelte Flow 画布内，需 `onwheel stopPropagation` 防止滚动冒泡缩放（见 `svelte.mdc` P-svelte-4）；弹窗统一用 Modal 外壳组件，禁止手写遮罩。
+
+## 四、与进化飞轮衔接
+命中上述规则/模式 → 写入记忆；同类 ≥2 次 → 固化规则并回流知识库。

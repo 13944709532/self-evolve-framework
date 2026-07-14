@@ -22,15 +22,18 @@ const COMMANDS = {
 }
 
 export function run() {
-  const cmd = process.argv[2] || "help"
-  const fn = COMMANDS[cmd]
-  if (!fn) {
-    console.error(`未知命令: ${cmd}\n`)
-    showHelp()
-    process.exit(1)
+  const first = process.argv[2]
+  let cmd = first
+  let argvStart = 3
+
+  // 无参数 / 以 -- 开头 / 不是已知命令 → 默认 init
+  if (!first || first.startsWith("--") || !COMMANDS[first]) {
+    cmd = "init"
+    argvStart = first && first.startsWith("--") ? 2 : 3
   }
 
-  const args = parseArgs(process.argv.slice(3))
+  const fn = COMMANDS[cmd]
+  const args = parseArgs(process.argv.slice(argvStart))
   const result = fn.run(args)
   Promise.resolve(result).catch((err) => {
     console.error("❌ 错误:", err.message)
