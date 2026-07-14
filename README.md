@@ -100,28 +100,23 @@ sync-docs                  → 项目文档对齐
 ```
 self-evolve-framework/
 ├── package.json          # npm 包配置
-├── bin/cli.js            # CLI 安装工具（含技术栈检测）
-├── template/
-│   ├── rules/
-│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成 + 知识库调度）
-│   │   ├── ponytail.mdc      ← 代码最小化原则
-│   │   └── knowledge/        ← 经验知识库（按语言/框架分目录，源自 Tauri 等项目沉淀）
-│   │       ├── README.md       ← 索引 + 归属约定 + 编号体系
-│   │       ├── general.mdc     ← 跨语言通用约束（always）
-│   │       ├── typescript.mdc  ← TS/JS 前端语言层（按需）
-│   │       ├── vue.mdc         ← Vue 框架层（按需）
-│   │       ├── ant-design-vue.mdc← ant-design-vue 组件库层（按需）
-│   │       ├── svelte.mdc      ← Svelte 5 框架层（按需）
-│   │       ├── tailwind.mdc    ← Tailwind CSS v4 框架层（按需）
-│   │       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
-│   │       ├── rust.mdc         ← Rust 后端层（按需）
-│   │       └── tauri.mdc        ← Tauri 框架层（按需）
-│   └── skills/
-│       ├── skillopt-sleep/      ← 离线进化引擎
-│       ├── impeccable/          ← 设计质量审计（含脚本）
-│       └── sync-docs/           ← 文档自动对齐
-├── AGENTS.md             # AI 代理指南
-├── CLAUDE.md             # AI 项目约束
-├── LICENSE
+├── bin/
+│   └── self-evolve.js    ← CLI 入口壳
+├── src/cli/              ← CLI 命令中枢
+│   ├── commands/init.js, list.js
+│   └── utils.js
+├── rules/                ← 规则（直接消费）
+│   ├── self-evolve.mdc   ← 编排层
+│   ├── ponytail.mdc      ← 代码最小化
+│   └── knowledge/        ← 经验知识库
+│       ├── general.mdc / typescript.mdc / vue.mdc / ...
+│       ├── svelte.mdc / shadcn-svelte.mdc / tailwind.mdc
+│       └── rust.mdc / tauri.mdc / ant-design-vue.mdc
+├── skills/               ← 技能（直接消费）
+│   ├── skillopt-sleep/   ← 离线进化引擎
+│   ├── impeccable/       ← 设计质量审计
+│   └── sync-docs/        ← 文档自动对齐
+├── docs/
+├── AGENTS.md / CLAUDE.md / LICENSE
 └── README.md
 ```
