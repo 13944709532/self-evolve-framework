@@ -39,34 +39,27 @@ npx self-evolve-framework init --skip-impeccable
 
 ## 安装了什么
 
-CLI 自动检测目标项目的技术栈，按需安装规则。
-
-### 始终安装（7 个通用规则）
-
 ```
 .codebuddy/
 ├── rules/
-│   ├── self-evolve.mdc           ← 进化编排（always 激活）
-│   ├── ponytail.mdc              ← 代码最小化原则
-│   ├── windows-cmd.mdc           ← Windows CMD 命令兼容
-│   ├── powershell.mdc            ← PowerShell UTF-8 编码
-│   ├── error-message-exposure.mdc ← 错误消息友好化
-│   ├── verify-done.mdc           ← 标记完成前核实代码
-│   └── CodeGraph.mdc             ← MCP 工具选择指南
+│   ├── self-evolve.mdc    ← 编排层（always 激活）
+│   ├── ponytail.mdc       ← 代码最小化原则
+│   └── knowledge/         ← 经验知识库（按语言/框架分目录）
+│       ├── general.mdc      ← 跨语言通用约束（always）
+│       ├── typescript.mdc   ← TS/JS 前端语言层（按需）
+│       ├── vue.mdc          ← Vue 框架层（按需）
+│       ├── ant-design-vue.mdc← ant-design-vue 组件库层（按需）
+│       ├── svelte.mdc       ← Svelte 5 框架层（按需）
+│       ├── tailwind.mdc     ← Tailwind CSS v4 框架层（按需）
+│       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
+│       ├── rust.mdc         ← Rust 后端层（按需）
+│       └── tauri.mdc        ← Tauri 框架层（按需）
 ├── skills/
 │   ├── skillopt-sleep/           ← 离线进化分析
 │   ├── impeccable/               ← 设计质量审计
 │   └── sync-docs/                ← 项目文档自动对齐
 CLAUDE.md                         ← 追加自我进化章节
 ```
-
-### 按技术栈自动安装
-
-| 检测条件 | 额外安装的规则 |
-|---------|--------------|
-| 有 `Cargo.toml` 或 `src-tauri/` | `db-path.mdc` · `rust-type-safety.mdc` · `app-error-pattern.mdc` · `invoke-safe-pattern.mdc` · `Tauri.mdc` |
-| 有 `svelte` 依赖 | `Svelte_5.mdc` · `Svelte_Flow.mdc` |
-| 有 `tailwindcss` 依赖 | `Tailwind_CSS_v4.mdc` |
 
 ## 使用
 
@@ -110,10 +103,19 @@ self-evolve-framework/
 ├── bin/cli.js            # CLI 安装工具（含技术栈检测）
 ├── template/
 │   ├── rules/
-│   │   ├── always/              ← 通用规则（7 个）
-│   │   ├── rust/                ← Rust/Tauri 规则（5 个）
-│   │   ├── svelte/              ← Svelte 规则（2 个）
-│   │   └── tailwind/            ← Tailwind 规则（1 个）
+│   │   ├── self-evolve.mdc   ← 编排层（含 Impeccable 集成 + 知识库调度）
+│   │   ├── ponytail.mdc      ← 代码最小化原则
+│   │   └── knowledge/        ← 经验知识库（按语言/框架分目录，源自 Tauri 等项目沉淀）
+│   │       ├── README.md       ← 索引 + 归属约定 + 编号体系
+│   │       ├── general.mdc     ← 跨语言通用约束（always）
+│   │       ├── typescript.mdc  ← TS/JS 前端语言层（按需）
+│   │       ├── vue.mdc         ← Vue 框架层（按需）
+│   │       ├── ant-design-vue.mdc← ant-design-vue 组件库层（按需）
+│   │       ├── svelte.mdc      ← Svelte 5 框架层（按需）
+│   │       ├── tailwind.mdc    ← Tailwind CSS v4 框架层（按需）
+│   │       ├── shadcn-svelte.mdc← shadcn-svelte 组件库层（按需）
+│   │       ├── rust.mdc         ← Rust 后端层（按需）
+│   │       └── tauri.mdc        ← Tauri 框架层（按需）
 │   └── skills/
 │       ├── skillopt-sleep/      ← 离线进化引擎
 │       ├── impeccable/          ← 设计质量审计（含脚本）

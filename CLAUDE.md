@@ -24,11 +24,10 @@
 
 | 文件 | 职责 |
 |------|------|
-| `bin/cli.js` | CLI 入口：init（安装，含技术栈检测）、sync（同步）、list（列表）、help |
-| `template/rules/always/` | 7 个通用规则（始终安装） |
-| `template/rules/rust/` | 5 个 Rust/Tauri 规则（按需安装） |
-| `template/rules/svelte/` | 2 个 Svelte 规则（按需安装） |
-| `template/rules/tailwind/` | 1 个 Tailwind 规则（按需安装） |
+| `bin/cli.js` | CLI 入口：init（安装）、sync（同步）、list（列表）、help |
+| `template/rules/self-evolve.mdc` | 进化编排 always 规则 |
+| `template/rules/ponytail.mdc` | 代码最小化原则 |
+| `template/rules/knowledge/` | 10 个经验知识库文件（按语言/框架分目录） |
 | `template/skills/skillopt-sleep/` | 离线进化分析引擎 |
 | `template/skills/impeccable/` | 设计质量审计工具 |
 | `template/skills/sync-docs/` | 项目文档同步技能（自动检测不一致） |

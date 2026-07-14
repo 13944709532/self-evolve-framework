@@ -36,30 +36,28 @@ node bin/cli.js list
 
 ### 规则（rules/）
 
-规则按技术栈分目录存放，CLI 安装时根据目标项目自动选择：
+顶层编排 + 经验知识库双层结构：
 
-**`always/` — 始终安装（7 个）**
-| 文件 | 用途 | 激活方式 |
-|------|------|---------|
-| `self-evolve.mdc` | 进化编排 — 调度 Ponytail + CodeGraph + Skillopt-Sleep + Impeccable | always |
-| `ponytail.mdc` | 代码最小化原则 | always |
-| `windows-cmd.mdc` | Windows CMD 命令兼容（grep→findstr 等） | always |
-| `powershell.mdc` | Get-Content 必须加 -Encoding UTF8 | always |
-| `error-message-exposure.mdc` | 错误消息必须友好化，禁止暴露原始异常 | always |
-| `verify-done.mdc` | 标记完成前必须核实代码真实存在 | always |
-| `CodeGraph.mdc` | MCP 工具选择指南 | always |
-
-**`rust/` — 检测到 Cargo.toml / src-tauri/ 时安装（5 个）**
+**顶层（always 激活）**
 | 文件 | 用途 |
 |------|------|
-| `db-path.mdc` | DB 路径必须绝对路径（Tauri 2 坑） |
-| `rust-type-safety.mdc` | Rust SQLite 用 Value 枚举替代 get_unwrap |
-| `app-error-pattern.mdc` | 强制 AppError 6 变体 |
-| `invoke-safe-pattern.mdc` | invokeSafe + INVOKE_ERROR 安全模式 |
-| `Tauri.mdc` | Tauri v2 官方规范 |
+| `self-evolve.mdc` | 进化编排 — 调度 Ponytail + CodeGraph + Skillopt-Sleep + Impeccable |
+| `ponytail.mdc` | 代码最小化原则 |
 
-**`svelte/` — 检测到 svelte 依赖时安装（2 个）**
-**`tailwind/` — 检测到 tailwindcss 依赖时安装（1 个）**
+**`knowledge/` — 经验知识库（按语言/框架分目录，源自 Tauri 等项目沉淀）**
+| 文件 | 用途 | 加载方式 |
+|------|------|---------|
+| `general.mdc` | 跨语言通用约束（命名原则、强制规则、多发模式） | always |
+| `typescript.mdc` | TS/JS 前端语言层 | 按需 |
+| `vue.mdc` | Vue 框架层 | 按需 |
+| `ant-design-vue.mdc` | ant-design-vue 组件库层 | 按需 |
+| `svelte.mdc` | Svelte 5 框架层 | 按需 |
+| `tailwind.mdc` | Tailwind CSS v4 框架层 | 按需 |
+| `shadcn-svelte.mdc` | shadcn-svelte 组件库层 | 按需 |
+| `rust.mdc` | Rust 后端层 | 按需 |
+| `tauri.mdc` | Tauri 框架层 | 按需 |
+
+各 `.mdc` 文件通过 `alwaysApply` 控制激活：`true` = 始终激活，`false` = 按需加载。
 
 ### 技能（skills/）
 | 目录 | 用途 |

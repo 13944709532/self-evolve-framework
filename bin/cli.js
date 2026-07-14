@@ -45,40 +45,7 @@ function showHelp() {
     npx self-evolve-framework init
     npx self-evolve-framework init --project ./my-app
     npx self-evolve-framework init --skip-claude-md --dry-run
-
-  智能安装:
-    CLI 自动检测目标项目技术栈，选择性安装对应规则：
-    - 始终安装：通用规则（7 个）
-    - 检测到 Cargo.toml / src-tauri/ → 安装 Rust/Tauri 规则（5 个）
-    - 检测到 svelte → 安装 Svelte 规则（2 个）
-    - 检测到 tailwindcss → 安装 Tailwind 规则（1 个）
   `)
-}
-
-/** 检测目标项目使用的技术栈 */
-function detectTechStack(projectDir) {
-  const deps = getProjectDeps(projectDir)
-
-  return {
-    rust: existsSync(resolve(projectDir, "Cargo.toml"))
-       || existsSync(resolve(projectDir, "src-tauri")),
-    svelte: !!deps["svelte"] || !!deps["@sveltejs/kit"]
-         || existsSync(resolve(projectDir, "svelte.config.js")),
-    tailwind: !!deps["tailwindcss"]
-           || existsSync(resolve(projectDir, "tailwind.config.js"))
-           || existsSync(resolve(projectDir, "tailwind.config.ts")),
-  }
-}
-
-function getProjectDeps(projectDir) {
-  const pkgPath = resolve(projectDir, "package.json")
-  if (!existsSync(pkgPath)) return {}
-  try {
-    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"))
-    return { ...pkg.dependencies, ...pkg.devDependencies }
-  } catch {
-    return {}
-  }
 }
 
 /** 递归复制目录中的 .mdc 文件到目标（扁平复制，不保持子目录结构） */
@@ -108,10 +75,10 @@ function listSkills() {
   const skillsDir = resolve(TEMPLATE_DIR, "skills")
 
   console.log("\n📦 模板中包含的规则：")
-  listRulesDir(resolve(TEMPLATE_DIR, "rules", "always"), "  通用（始终安装）")
-  listRulesDir(resolve(TEMPLATE_DIR, "rules", "rust"), "  Rust / Tauri（检测到 Rust 时安装）")
-  listRulesDir(resolve(TEMPLATE_DIR, "rules", "svelte"), "  Svelte（检测到 Svelte 时安装）")
-  listRulesDir(resolve(TEMPLATE_DIR, "rules", "tailwind"), "  Tailwind CSS（检测到时安装）")
+  const rulesSrc = resolve(TEMPLATE_DIR, "rules")
+  const allRules = copyRulesFlat(rulesSrc, "", true)
+  console.log(`  共 ${allRules.length} 个规则（含 ${resolve(TEMPLATE_DIR, "rules", "knowledge")} 目录下的经验知识库）`)
+  for (const f of allRules.sort()) console.log(`    - ${f}`)
 
   console.log("\n🧠 模板中包含的技能：")
   if (existsSync(skillsDir)) {
@@ -127,26 +94,6 @@ function listSkills() {
   }
 }
 
-function listRulesDir(dir, label) {
-  if (!existsSync(dir)) return
-  const files = []
-  function walk(d) {
-    for (const entry of readdirSync(d)) {
-      const full = join(d, entry)
-      if (statSync(full).isDirectory()) {
-        walk(full)
-      } else if (entry.endsWith(".mdc")) {
-        files.push(entry)
-      }
-    }
-  }
-  walk(dir)
-  if (files.length > 0) {
-    console.log(`${label}  (${files.length} 个)`)
-    for (const f of files.sort()) console.log(`    - ${f}`)
-  }
-}
-
 async function init(args) {
   const baseDir = resolve(args["--project"] || process.cwd())
   const dryRun = !!args["--dry-run"]
@@ -156,54 +103,13 @@ async function init(args) {
   console.log(`📍 项目路径: ${baseDir}`)
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
 
-  // 检测技术栈
-  const tech = detectTechStack(baseDir)
-  console.log("🔍 技术栈检测：")
-  console.log(`  Rust/Tauri: ${tech.rust ? "✅" : "❌"}`)
-  console.log(`  Svelte:     ${tech.svelte ? "✅" : "❌"}`)
-  console.log(`  Tailwind:   ${tech.tailwind ? "✅" : "❌"}\n`)
+  let count = 0
 
-  const destRulesDir = resolve(baseDir, ".codebuddy/rules")
-  let totalRules = 0
-
-  // 复制 always 规则（始终安装）
-  const alwaysSrc = resolve(TEMPLATE_DIR, "rules", "always")
-  const alwaysFiles = copyRulesFlat(alwaysSrc, destRulesDir, dryRun)
-  const alwaysPreview = dryRun ? "🔍 将复制" : "✅ 复制"
-  console.log(`  ${alwaysPreview}  rules/always/  →  .codebuddy/rules/（${alwaysFiles.length} 个通用规则）`)
-  totalRules += alwaysFiles.length
-
-  // 复制 Rust 规则（按需）
-  if (tech.rust) {
-    const rustSrc = resolve(TEMPLATE_DIR, "rules", "rust")
-    const rustFiles = copyRulesFlat(rustSrc, destRulesDir, dryRun)
-    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/rust/    →  .codebuddy/rules/（${rustFiles.length} 个 Rust/Tauri 规则）`)
-    totalRules += rustFiles.length
-  } else {
-    console.log("  ⏭️  跳过  rules/rust/（未检测到 Rust 项目）")
-  }
-
-  // 复制 Svelte 规则（按需）
-  if (tech.svelte) {
-    const svelteSrc = resolve(TEMPLATE_DIR, "rules", "svelte")
-    const svelteFiles = copyRulesFlat(svelteSrc, destRulesDir, dryRun)
-    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/svelte/  →  .codebuddy/rules/（${svelteFiles.length} 个 Svelte 规则）`)
-    totalRules += svelteFiles.length
-  } else {
-    console.log("  ⏭️  跳过  rules/svelte/（未检测到 Svelte）")
-  }
-
-  // 复制 Tailwind 规则（按需）
-  if (tech.tailwind) {
-    const tailwindSrc = resolve(TEMPLATE_DIR, "rules", "tailwind")
-    const tailwindFiles = copyRulesFlat(tailwindSrc, destRulesDir, dryRun)
-    console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/tailwind/ →  .codebuddy/rules/（${tailwindFiles.length} 个 Tailwind 规则）`)
-    totalRules += tailwindFiles.length
-  } else {
-    console.log("  ⏭️  跳过  rules/tailwind/（未检测到 Tailwind CSS）")
-  }
-
-  let count = totalRules > 0 ? 1 : 0
+  // 复制 rules（扁平化 knowledge/ 子目录）
+  const rulesSrc = resolve(TEMPLATE_DIR, "rules")
+  const rulesFiles = copyRulesFlat(rulesSrc, resolve(baseDir, ".codebuddy/rules"), dryRun)
+  console.log(`  ${dryRun ? "🔍 将复制" : "✅ 复制"}  rules/  →  .codebuddy/rules/（${rulesFiles.length} 个规则）`)
+  count++
 
   // 复制 skills（排除 impeccable 如果 --skip-impeccable）
   const skillsSrc = resolve(TEMPLATE_DIR, "skills")
