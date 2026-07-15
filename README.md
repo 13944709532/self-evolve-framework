@@ -41,6 +41,8 @@ npx self-evolve-framework --skip-impeccable
 
 框架维护者在本仓库内运行 `self-evolve`（进化）时，会自动检查上游 [pbakaus/impeccable](https://github.com/pbakaus/impeccable) 的最新 release，若有新版则全量同步 `skills/impeccable/`（SKILL.md + reference/ + scripts/ + agents/），保证后续分发的版本不落后。普通用户的安装过程不会触发网络检查。
 
+同步落地前会自动做**本地化改写**，因为上游 skill 以 `.agents` harness 布局编写（调用路径形如 `node .agents/skills/impeccable/scripts/context.mjs`），而本框架把 skill 安装到 `.codebuddy/skills/impeccable/`。改写规则：① 所有文件中的 `.agents/skills/impeccable` → `.codebuddy/skills/impeccable`（覆盖 SKILL.md、reference/*.md、scripts/* 内对自身的调用路径）；② `scripts/pin.mjs` 的 harness 列表追加 `.codebuddy`，使 `$impeccable pin <cmd>` 能在我们的 harness 下创建快捷方式。该改写每次同步都会执行，故升级不会被上游覆盖冲掉。
+
 也可手动执行：
 
 ```bash
