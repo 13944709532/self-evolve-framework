@@ -109,11 +109,30 @@ export function showHelp(cmd) {
     🧠 技能清单（含每个 Skill 的描述摘要）
 
   嵌套目录（如 knowledge/）中的 .mdc 文件扁平展示
-  `)} else if (cmd === "sync") {
+  `)  } else if (cmd === "sync") {
     console.log(`
   self-evolve sync — 强制从框架同步最新版本
 
   等同于 self-evolve（默认就是安装/升级），额外打印来源路径
+  `)} else if (cmd === "update-impeccable") {
+    console.log(`
+  self-evolve update-impeccable — 检查并同步上游 impeccable
+
+  对比框架内 bundled impeccable 的版本与上游 pbakaus/impeccable 最新 release：
+    • 上游更新 → 全量同步 SKILL.md / reference/ / scripts/ / agents/ 到 skills/impeccable/
+    • 已最新   → 不做任何改动
+    • 无网络   → 仅警告并跳过，不影响安装
+
+  维护者在本框架仓库内运行 self-evolve 时会自动触发本检查。
+
+  选项:
+    --force    忽略版本比较，强制重新同步
+    --dry-run  预览将更新的文件数，不写入
+
+  示例:
+    self-evolve update-impeccable            # 检查并同步（如有更新）
+    self-evolve update-impeccable --force    # 强制同步
+    self-evolve update-impeccable --dry-run  # 预览
   `)} else {
     console.log(`
   self-evolve — CodeBuddy 自我进化飞轮安装工具
@@ -122,6 +141,7 @@ export function showHelp(cmd) {
     self-evolve            一键安装/升级规则 + 技能（默认）
     self-evolve auth       一键 GitHub 认证 ← 先用这个
     self-evolve sync       强制同步最新版本
+    self-evolve update-impeccable  检查并同步上游 impeccable
     self-evolve list       列出规则/技能清单
     self-evolve help [cmd] 查看某命令的详细说明
 

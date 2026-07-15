@@ -1,6 +1,7 @@
 import { init } from "./commands/init.js"
 import { listSkills } from "./commands/list.js"
 import { authCommand } from "./commands/auth.js"
+import { updateImpeccable } from "./commands/update-impeccable.js"
 import { showHelp } from "./utils.js"
 
 const COMMANDS = {
@@ -19,6 +20,10 @@ const COMMANDS = {
   auth: {
     desc: "GitHub 设备认证（自动获取 Issues 权限 token）",
     run: (args) => authCommand(args),
+  },
+  "update-impeccable": {
+    desc: "检查并同步上游 impeccable 到框架（进化时自动调用）",
+    run: (args) => updateImpeccable({ dryRun: !!args["--dry-run"], force: !!args["--force"] }),
   },
   help: {
     desc: "显示帮助信息（help [命令名] 查看子命令帮助）",

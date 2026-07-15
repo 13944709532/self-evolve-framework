@@ -37,12 +37,25 @@ npx self-evolve-framework --skip-claude-md
 npx self-evolve-framework --skip-impeccable
 ```
 
+### Impeccable 自动更新
+
+框架维护者在本仓库内运行 `self-evolve`（进化）时，会自动检查上游 [pbakaus/impeccable](https://github.com/pbakaus/impeccable) 的最新 release，若有新版则全量同步 `skills/impeccable/`（SKILL.md + reference/ + scripts/ + agents/），保证后续分发的版本不落后。普通用户的安装过程不会触发网络检查。
+
+也可手动执行：
+
+```bash
+self-evolve update-impeccable            # 检查并同步（如有更新）
+self-evolve update-impeccable --force    # 忽略版本比较，强制重新同步
+self-evolve update-impeccable --dry-run  # 预览将更新的文件数
+```
+
 ### CLI 命令
 
 ```bash
 self-evolve              # 默认安装/升级
 self-evolve auth         # 一键 GitHub 认证
 self-evolve list         # 列出规则和技能
+self-evolve update-impeccable  # 检查并同步上游 impeccable 最新版
 self-evolve help [cmd]   # 帮助
 ```
 

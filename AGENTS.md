@@ -11,7 +11,7 @@ Self-Evolve Framework 是一个 **CodeBuddy IDE 自我进化飞轮工具包**，
 ```
 self-evolve-framework/
 ├── bin/self-evolve.js    # CLI 入口壳 → src/cli/
-├── src/cli/              # 命令中枢（init/upgrade/auth/list）
+├── src/cli/              # 命令中枢（init/upgrade/auth/list/update-impeccable）
 ├── rules/                # 规则（直接消费，安装→ .codebuddy/rules/）
 ├── skills/               # 技能（直接消费，安装→ .codebuddy/skills/）
 ├── docs/                 # 架构文档 + 变更日志

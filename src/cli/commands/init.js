@@ -3,6 +3,7 @@ import { join, resolve, basename } from "path"
 import { fileURLToPath } from "url"
 import { copyRulesFlat, detectPython } from "../utils.js"
 import { doUpgrade } from "./upgrade.js"
+import { updateImpeccable } from "./update-impeccable.js"
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 const PKG_ROOT = resolve(__dirname, "../../..")
@@ -26,6 +27,20 @@ export async function init(args, isSync = false) {
     console.log(`🐍 Python: ❌  ${pythonVer || "未安装"} → skillopt-sleep 以模拟模式运行（仅报告，不做训练）`)
   }
   console.log(`🧪 ${dryRun ? "DRY RUN — 不写入文件" : "执行中..."}\n`)
+
+  // 维护者模式：在本框架仓库内运行 self-evolve（进化）时，自动检查并同步上游 impeccable
+  const pkgPath = resolve(PKG_ROOT, "package.json")
+  const pkgName = existsSync(pkgPath) ? JSON.parse(readFileSync(pkgPath, "utf-8")).name : ""
+  const isMaintainer = resolve(baseDir) === PKG_ROOT && pkgName === "self-evolve-framework"
+  if (isMaintainer && !skipImpeccable) {
+    console.log("🔧 维护者模式：检查 impeccable 上游更新...")
+    try {
+      await updateImpeccable({ dryRun })
+    } catch (e) {
+      console.warn(`⚠️  impeccable 自动更新跳过（${e.message}）`)
+    }
+    console.log()
+  }
 
   const rulesExist = existsSync(resolve(baseDir, ".codebuddy/rules"))
   let count = 0
