@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, renameSync, cpSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, renameSync, cpSync, readdirSync, statSync } from "fs"
 import { join, resolve, dirname } from "path"
 import { fileURLToPath } from "url"
 import { tmpdir } from "os"
@@ -118,6 +118,60 @@ async function downloadToTemp(tag, paths) {
   return { dest, okRels, failed }
 }
 
+// 上游 impeccable 为 `.agents` harness 设计，但本框架把 skill 安装到
+// `.codebuddy/skills/impeccable/`。
+// 若保留上游的 `.agents/skills/impeccable/...` 调用路径，目标项目里的 AI agent
+// 执行 `node .agents/skills/impeccable/scripts/context.mjs` 会找不到文件。
+// 因此下载后做本地化改写，使其符合本框架的项目结构。
+const SKILL_PATH_FIND = ".agents/skills/impeccable"
+const SKILL_PATH_REPLACE = ".codebuddy/skills/impeccable"
+// `.codebuddy` harness 不在上游 pin.mjs 的 harness 列表里，需补上，
+// 否则 `$impeccable pin <cmd>` 不会在我们的 harness 下创建快捷方式。
+const PIN_HARNESS_NEEDLE =
+  "  '.claude', '.cursor', '.gemini', '.codex', '.agents',"
+const PIN_HARNESS_REPL =
+  "  '.claude', '.cursor', '.gemini', '.codex', '.agents', '.codebuddy',"
+
+function walk(root, cb) {
+  for (const name of readdirSync(root)) {
+    const p = join(root, name)
+    if (statSync(p).isDirectory()) walk(p, cb)
+    else cb(p)
+  }
+}
+
+/**
+ * 把下载到临时目录的 impeccable 改写成本框架结构：
+ *  - 全部文件中的 `.agents/skills/impeccable` → `.codebuddy/skills/impeccable`
+ *    （覆盖 SKILL.md、reference/*.md、scripts/* 内的 skill 自身调用路径）
+ *  - scripts/pin.mjs 的 HARNESS_DIRS 追加 `.codebuddy`
+ * 返回改写的文件数。
+ */
+function localizeSkill(root) {
+  let changed = 0
+  walk(root, (file) => {
+    let text
+    try {
+      text = readFileSync(file, "utf-8")
+    } catch {
+      return // 跳过无法读取的文件（如二进制）
+    }
+    let next = text
+    if (file.endsWith(join("scripts", "pin.mjs")) && !next.includes("'.codebuddy'")) {
+      next = next.replace(PIN_HARNESS_NEEDLE, PIN_HARNESS_REPL)
+    }
+    if (next.includes(SKILL_PATH_FIND)) {
+      next = next.split(SKILL_PATH_FIND).join(SKILL_PATH_REPLACE)
+    }
+    if (next !== text) {
+      writeFileSync(file, next)
+      changed++
+    }
+  })
+  return changed
+}
+
+
 /**
  * 检查并同步上游 impeccable 到框架 bundled 目录。
  * @param {{ dryRun?: boolean, force?: boolean }} opts
@@ -167,6 +221,10 @@ export async function updateImpeccable({ dryRun = false, force = false } = {}) {
     )
     return { local, upstream: info.upstreamVersion, updated: false, fileCount: okRels.length }
   }
+
+  // 本地化：把上游 `.agents` 调用路径改写为本框架的 `.codebuddy` 结构
+  const localized = localizeSkill(dest)
+  console.log(`🔧 已本地化 ${localized} 个文件（.agents → .codebuddy）`)
 
   // 原子替换：先清空本地目录，再移入临时目录（跨设备回退到拷贝）
   rmSync(LOCAL_SKILL_DIR, { recursive: true, force: true })
